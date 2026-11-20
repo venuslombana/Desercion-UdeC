@@ -71,6 +71,10 @@ const ICONOS = {
   ficha: "M4 4h16a1 1 0 0 1 1 1v14a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1z|M9 11a2 2 0 1 0 0-4 2 2 0 0 0 0 4|M6 16a3 3 0 0 1 6 0|M14 9h4|M14 13h4",
   teclado: "M3 6h18v12H3z|M7 10h.01|M11 10h.01|M15 10h.01|M7 14h10",
   proyector: "M3 4h18v12H3z|M12 16v4|M8 20h8|M10 8l4 2-4 2z", pausa: "M7 4h3v16H7z|M14 4h3v16h-3z", play: "M6 4l14 8-14 8z",
+  instalar: "M12 3v12|M7 10l5 5 5-5|M5 21h14",
+  wifi: "M2 2l20 20|M8.5 16.5a5 5 0 0 1 7 0|M5 12.9a10 10 0 0 1 5.2-2.8|M19 12.9a10 10 0 0 0-2.2-1.6|M1.4 9a16 16 0 0 1 4.8-3|M12 20h.01",
+  celular: "M7 2h10a1 1 0 0 1 1 1v18a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V3a1 1 0 0 1 1-1z|M11 18h2",
+  compartir: "M12 3v12|M8 7l4-4 4 4|M5 12v8h14v-8",
   calor: "M3 3h5v5H3z|M10 3h5v5h-5z|M17 3h4v5h-4z|M3 10h5v5H3z|M10 10h5v5h-5z|M3 17h5v4H3z",
 };
 function icono(nombre, cls = "") {
@@ -941,6 +945,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (e.key === "Escape") { if (!$("#modal").hidden) cerrarModal(); else alternarMenu(false); } });
   window.addEventListener("hashchange", () => { if (sesion.token) router(); });
   $("#btn-presentar").addEventListener("click", () => presentacion());
+  prepararApp();
   iniciar();
 });
 
@@ -952,7 +957,9 @@ async function iniciar() {
   let i = 0; const rotar = setInterval(() => { msg.textContent = frases[++i % frases.length]; }, 1400);
   for (let intento = 0; intento < 40; intento++) {
     try { const r = await fetch("/api/health", { cache: "no-store" }); if (r.ok) break; } catch { /* servidor aún no responde */ }
-    clearInterval(rotar); msg.textContent = "El servidor está despertando; puede tardar hasta un minuto…"; await espera(3000);
+    clearInterval(rotar);
+    if (!navigator.onLine) { msg.textContent = "Sin conexión a internet. Continuará apenas vuelva la señal…"; await new Promise((r) => window.addEventListener("online", r, { once: true })); continue; }
+    msg.textContent = "El servidor está despertando; puede tardar hasta un minuto…"; await espera(3000);
   }
   try { if (sesion.token) await mostrarApp(); else mostrarLogin(); }
   finally { clearInterval(rotar); setTimeout(() => $("#cargando").classList.add("fuera"), Math.max(0, 900 - (performance.now() - t0))); }
@@ -1000,6 +1007,7 @@ function comandosBase() {
   }
   const oscuro = document.documentElement.dataset.tema === "oscuro";
   lista.push({ grupo: "Acciones", ic: oscuro ? "sol" : "luna", t: oscuro ? "Cambiar a modo claro" : "Cambiar a modo oscuro", sub: "Apariencia", run: alternarTema });
+  if (instalable()) lista.push({ grupo: "Acciones", ic: "instalar", t: "Instalar la aplicación en este dispositivo", sub: "Queda con el escudo en la pantalla de inicio", run: instalarApp });
   lista.push({ grupo: "Acciones", ic: "proyector", t: "Iniciar el modo presentación", sub: "Pantalla completa con diapositivas de datos vivos", run: () => presentacion() });
   lista.push({ grupo: "Acciones", ic: "ruta", t: "Ver el recorrido guiado", sub: "Ayuda", run: () => recorrido(0) });
   lista.push({ grupo: "Acciones", ic: "salir", t: "Cerrar sesión", sub: sesion.usuario?.nombre || "", run: () => $("#btn-salir").click() });
@@ -1375,4 +1383,39 @@ async function presentacion() {
   document.addEventListener("keydown", teclas, true);
   document.addEventListener("fullscreenchange", alSalirPantalla);
   ir(0);
+}
+
+
+// ------------------------------------------------------------------ aplicación instalable (PWA)
+let eventoInstalar = null;
+const esIOS = () => /iphone|ipad|ipod/i.test(navigator.userAgent) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+const enApp = () => window.matchMedia("(display-mode: standalone)").matches || navigator.standalone === true;
+const instalable = () => !enApp() && (eventoInstalar !== null || esIOS());
+function pintarInstalar() { $("#btn-instalar").hidden = !instalable(); }
+async function instalarApp() {
+  if (eventoInstalar) {
+    eventoInstalar.prompt();
+    const { outcome } = await eventoInstalar.userChoice;
+    if (outcome === "accepted") aviso("Instalando Permanencia UdeC…", "ok");
+    eventoInstalar = null; pintarInstalar(); return;
+  }
+  // iPhone y iPad no tienen botón de instalación: se explica el camino de Safari
+  abrirModal("Instalar en iPhone o iPad", el("div", { class: "tour" }, el("div", { class: "tour-ic" }, icono("celular")),
+    el("h3", {}, "Tres toques y queda en tu pantalla de inicio"),
+    el("ol", { class: "pasos-instalar" },
+      el("li", {}, "Abre esta página en ", el("b", {}, "Safari"), "."),
+      el("li", {}, "Toca el botón ", el("b", {}, "Compartir "), icono("compartir"), " en la barra de abajo."),
+      el("li", {}, "Elige ", el("b", {}, "«Agregar a pantalla de inicio»"), " y luego ", el("b", {}, "Agregar"), ".")),
+    el("div", { class: "modal-pie" }, el("button", { class: "btn btn-primario", type: "button", onclick: cerrarModal }, icono("check"), "Entendido"))));
+}
+function prepararApp() {
+  if ("serviceWorker" in navigator) navigator.serviceWorker.register("/sw.js").catch(() => { /* sin soporte o sin https: la web funciona igual */ });
+  window.addEventListener("beforeinstallprompt", (e) => { e.preventDefault(); eventoInstalar = e; pintarInstalar(); });
+  window.addEventListener("appinstalled", () => { eventoInstalar = null; pintarInstalar(); aviso("¡Listo! Permanencia UdeC quedó instalada en este dispositivo.", "ok"); });
+  $("#btn-instalar").addEventListener("click", instalarApp);
+  const red = () => { $("#sin-conexion").hidden = navigator.onLine; };
+  window.addEventListener("online", () => { red(); aviso("Conexión recuperada.", "ok"); if (sesion.token && !$("#vista-app").hidden) router(); });
+  window.addEventListener("offline", red); red();
+  if (enApp()) document.documentElement.classList.add("modo-app");
+  pintarInstalar();
 }

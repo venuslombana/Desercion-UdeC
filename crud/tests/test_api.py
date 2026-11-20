@@ -168,6 +168,16 @@ def test_tablero_real_vs_simulado():
     assert any(p["real"] and p["simulado"] for p in j["serie"])
     assert c.get("/api/tablero", params={"escenario": "No existe"}, headers=CON).status_code == 404
 
+def test_aplicacion_instalable():
+    sw = c.get("/sw.js")
+    assert sw.status_code == 200 and "javascript" in sw.headers["content-type"] and sw.headers["cache-control"] == "no-cache"
+    assert '"/api/"' in sw.text or "/api/" in sw.text                 # la API nunca se guarda en caché
+    m = c.get("/static/manifest.json").json()
+    assert m["display"] == "standalone" and m["start_url"].startswith("/") and any(i["purpose"] == "maskable" for i in m["icons"])
+    for i in m["icons"]:
+        assert c.get(i["src"]).status_code == 200
+    assert c.get("/static/offline.html").status_code == 200
+
 def test_mapa_de_cohortes():
     j = c.get("/api/cohortes-mapa", headers=CON).json()
     assert j["semestres"] == 10 and j["filas"]

@@ -43,7 +43,7 @@ async def cabeceras_seguridad(request: Request, call_next):
     if not request.url.path.startswith(("/docs", "/redoc", "/openapi.json")):
         resp.headers["Content-Security-Policy"] = ("default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; "
                                                    "connect-src 'self'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'")
-    if request.url.path == "/" or request.url.path.startswith("/static/"):
+    if request.url.path in ("/", "/sw.js") or request.url.path.startswith("/static/"):
         # El navegador revalida la interfaz en cada visita (respuesta 304 si no cambió), así nunca mezcla archivos de versiones distintas.
         resp.headers["Cache-Control"] = "no-cache"
     if request.url.scheme == "https" or request.headers.get("x-forwarded-proto") == "https":
@@ -108,6 +108,12 @@ app.include_router(relaciones_router)
 app.include_router(reportes_router)
 
 app.mount("/static", StaticFiles(directory=STATIC), name="static")
+
+
+@app.get("/sw.js", include_in_schema=False)
+def service_worker():
+    """El service worker se sirve desde la raíz para que controle toda la aplicación instalable."""
+    return FileResponse(os.path.join(STATIC, "sw.js"), media_type="application/javascript")
 
 
 @app.get("/", include_in_schema=False)

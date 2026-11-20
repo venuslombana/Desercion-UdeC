@@ -531,3 +531,11 @@ kbd { font: inherit; font-size: .68rem; font-weight: 700; background: var(--sup)
 .pres .pres-grid .esc-rejilla { grid-template-columns: 1fr; gap: .8rem; align-content: start; }
 .pres .pres-grid .esc-tarjeta { padding: .9rem 1.1rem; }
 .pres .mapa td { height: 28px; } .pres .mapa { font-size: .74rem; }
+
+/* =================== Aplicación instalable =================== */
+.btn-instalar { border-color: var(--v); color: var(--v-txt); }
+.btn-instalar:hover { background: var(--v); color: #fff; }
+.sin-conexion { position: fixed; top: calc(var(--barra-h) + .6rem); left: 50%; transform: translateX(-50%); z-index: 55; background: #8a4a00; color: #fff; padding: .55rem 1rem; border-radius: 99px; font-size: .82rem; font-weight: 700; display: flex; gap: .5rem; align-items: center; box-shadow: var(--sombra-alta); animation: subir .3s both; max-width: calc(100vw - 2rem); }
+.pasos-instalar { text-align: left; max-width: 34ch; margin: 1rem auto 0; padding-left: 1.2rem; display: grid; gap: .6rem; color: var(--gris); }
+.sin-red .btn { margin-top: 1.2rem; text-decoration: none; }
+@media (max-width: 860px) { .btn-instalar .txt { display: none; } .btn-instalar { width: 40px; height: 40px; padding: 0; border-radius: 50%; } }
