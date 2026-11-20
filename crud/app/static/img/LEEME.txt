@@ -1,0 +1,11 @@
+Logo de la Universidad de Cundinamarca
+
+Guarde aquí el imagotipo horizontal oficial con el nombre exacto:  logo-udec.png
+(PNG con fondo transparente, de unos 300 a 600 px de ancho).
+
+Descárguelo del sitio oficial de la universidad (www.ucundinamarca.edu.co) o pídalo a la
+Oficina Asesora de Comunicaciones. El Manual de Imagen Institucional (ECOM002) indica que la
+versión a color solo se usa sobre fondo blanco; por eso la aplicación lo muestra dentro de un
+recuadro blanco, tanto en la pantalla de inicio de sesión como en la barra superior.
+
+Si el archivo no está, la aplicación muestra un texto "UdeC" de respaldo y funciona igual.

@@ -116,3 +116,9 @@ El repositorio trae un `render.yaml` (Blueprint) que crea la base PostgreSQL y e
 5. Entrar con los usuarios demo (contraseña `Cambiar-123`).
 
 Notas del plan gratuito: el servicio se duerme tras 15 min sin tráfico (el primer acceso tarda ~1 min), el disco no es persistente (los archivos subidos se pierden al reiniciar) y la base gratuita vence a los 30 días.
+
+## Identidad visual
+
+La interfaz usa la paleta del Manual de Imagen Institucional de la Universidad de Cundinamarca (verdes #00482B y #007B3E, amarillos #FBE122 y #DAAA00, y los secundarios) y la tipografía institucional Montserrat, servida localmente (licencia SIL OFL en `crud/app/static/fonts`).
+
+Para mostrar el logo oficial, guarde el imagotipo horizontal como `crud/app/static/img/logo-udec.png` (ver `img/LEEME.txt`). Sin ese archivo se muestra un texto de respaldo.
