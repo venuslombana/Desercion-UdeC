@@ -43,6 +43,9 @@ async def cabeceras_seguridad(request: Request, call_next):
     if not request.url.path.startswith(("/docs", "/redoc", "/openapi.json")):
         resp.headers["Content-Security-Policy"] = ("default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; "
                                                    "connect-src 'self'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'")
+    if request.url.path == "/" or request.url.path.startswith("/static/"):
+        # El navegador revalida la interfaz en cada visita (respuesta 304 si no cambió), así nunca mezcla archivos de versiones distintas.
+        resp.headers["Cache-Control"] = "no-cache"
     if request.url.scheme == "https" or request.headers.get("x-forwarded-proto") == "https":
         resp.headers["Strict-Transport-Security"] = "max-age=31536000"
     return resp

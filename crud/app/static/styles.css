@@ -181,6 +181,8 @@ input:invalid.tocado, select:invalid.tocado, textarea:invalid.tocado, .con-error
 .barra-prog > span { display: block; height: 100%; border-radius: 99px; background: var(--v); transition: width .8s cubic-bezier(.2,.8,.2,1); width: 0; }
 .barra-prog.ambar > span { background: var(--naranja); } .barra-prog.rojo > span { background: var(--rojo); }
 .grafica { position: relative; height: 300px; }
+.grafica-baja { height: 230px; }
+.tarjeta > h2 + .grafica { margin-top: .6rem; }
 .dos-col { display: grid; gap: 1rem; grid-template-columns: 1fr 1fr; margin-bottom: 1.2rem; }
 
 /* ---------- Inicio (panel de bienvenida) ---------- */

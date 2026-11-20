@@ -381,6 +381,13 @@ async function vistaInicio(main) {
   }
   if (q) kpis.push(kpi(pendientesCola ? "kpi-oro" : "kpi-verde", "cola", "Casos esperando atención", fmt(pendientesCola, 0), "Cola de Bienestar · " + q.periodo));
   if (t) kpis.push(tarjetaCapacidad(t.capacidad, t.periodo_en_curso));
+  // panorama: dona con el resultado del último periodo cerrado y área con la deserción histórica y proyectada
+  const dona = el("canvas", { role: "img", "aria-label": "Resultado de los estudiantes en el último periodo cerrado" });
+  const area = el("canvas", { role: "img", "aria-label": "Deserción por periodo, real y proyectada" });
+  const ultReal = t ? [...t.serie].reverse().find((x) => x.real) : null;
+  const panorama = t && ultReal ? el("div", { class: "dos-col" },
+    el("section", { class: "tarjeta" }, el("h2", {}, icono("personas"), `¿Cómo terminaron los estudiantes en ${ultReal.periodo}?`), el("div", { class: "grafica" }, dona)),
+    el("section", { class: "tarjeta" }, el("h2", {}, icono("tablero"), "Deserción: historia y proyección"), el("div", { class: "grafica" }, area))) : null;
   const hora = new Date().getHours(), saludo = hora < 12 ? "Buenos días" : hora < 19 ? "Buenas tardes" : "Buenas noches";
   const nombre = (u.nombre || "").split(" ")[0];
   main.replaceChildren(
@@ -392,6 +399,7 @@ async function vistaInicio(main) {
         el("button", { class: "btn btn-acento", type: "button", onclick: () => recorrido(0) }, icono("ruta"), "Ver recorrido guiado"),
         el("a", { class: "btn btn-sutil", href: "#tablero" }, "Ir al tablero", icono("flecha")))),
     el("div", { class: "rejilla" }, kpis),
+    panorama,
     el("h2", { class: "seccion-titulo" }, icono("objetivo"), "¿Qué quieres hacer hoy?"),
     el("div", { class: "acciones-rapidas" }, ACCIONES.filter((a) => puede(a[3])).map(([dest, tit, desc, , ic, nuevo]) =>
       el("a", { class: "accion", href: "#" + dest, onclick: () => { abrirNuevo = nuevo ? dest : null; } },
@@ -404,6 +412,19 @@ async function vistaInicio(main) {
     el("h2", { class: "seccion-titulo" }, icono("libro"), "Glosario rápido"),
     el("dl", { class: "glosario" }, GLOSARIO.map(([t2, d, ic]) => el("div", {}, el("dt", {}, icono(ic), t2), el("dd", {}, d)))));
   animarBarras(main);
+  if (panorama) {
+    const mat = ultReal.real.matriculados, des = Math.round(ultReal.real.desercion_periodo * mat), gra = ultReal.real.graduados;
+    grafica(dona, { type: "doughnut", data: { labels: ["Continúan", "Desertan", "Se gradúan"], datasets: [{ data: [mat - des - gra, des, gra],
+      backgroundColor: [COLOR.verde, COLOR.rojo, COLOR.turquesa], borderColor: cssVar("--sup"), borderWidth: 4, hoverOffset: 14, borderRadius: 6, spacing: 2 }] },
+      options: { cutout: "68%", plugins: { centro: { valor: fmt(mat, 0), texto: "estudiantes" }, legend: { position: window.innerWidth < 600 ? "bottom" : "right" },
+        tooltip: { callbacks: { label: (c) => ` ${c.label}: ${fmt(c.parsed, 0)} (${pct(c.parsed / mat, 1)})` } } }, animation: { animateRotate: true, duration: 1300 } } });
+    const sub = t.serie.filter((x) => x.periodo >= "2019-1");
+    grafica(area, { type: "line", data: { labels: sub.map((x) => x.periodo), datasets: [
+      { label: "Real", data: sub.map((x) => (x.real ? +(100 * x.real.desercion_periodo).toFixed(2) : null)), borderColor: COLOR.verde, backgroundColor: degradado(COLOR.verde), fill: "origin", pointRadius: 3, pointBackgroundColor: COLOR.verde, pointBorderColor: "#fff" },
+      { label: "Proyección (sin cambios)", data: sub.map((x) => (x.simulado && !x.real ? +(100 * x.simulado.desercion_periodo).toFixed(2) : null)), borderColor: COLOR.oro, borderDash: [7, 5], pointRadius: 0 }] },
+      options: { interaction: { mode: "index", intersect: false }, plugins: { marca: { etiqueta: "2026-1", texto: "Proyección" }, tooltip: { callbacks: { label: (c) => ` ${c.dataset.label}: ${fmt(c.parsed.y, 2)} %` } } },
+        scales: ejes({ ticks: { callback: (v) => v + " %" } }) } });
+  }
   if (!almacen.leer("recorrido-visto")) { almacen.guardar("recorrido-visto", "1"); setTimeout(() => recorrido(0), 400); }
 }
 function kpi(cls, ic, titulo, valor, sub) {
@@ -619,11 +640,68 @@ function confirmarBorrado(cfg, item, alBorrar) {
 // ------------------------------------------------------------------ tablero real frente a simulado
 let graficas = [];
 const COLOR = { verde: "#007B3E", verdeOsc: "#00482B", oro: "#DAAA00", amarillo: "#FBE122", turquesa: "#00A99D", naranja: "#F7931E", rojo: "#c0262d" };
+// ---- utilidades de gráficas: estilo común, degradados y complementos propios (línea de referencia, cruz, texto central)
+const rgba = (hex, a) => { const n = parseInt(hex.slice(1), 16); return `rgba(${n >> 16},${(n >> 8) & 255},${n & 255},${a})`; };
+function degradado(hex, fuerte = .38, horizontal = false) {
+  return (c) => {
+    const { ctx, chartArea } = c.chart; if (!chartArea) return rgba(hex, fuerte / 2);
+    const g = horizontal ? ctx.createLinearGradient(chartArea.left, 0, chartArea.right, 0) : ctx.createLinearGradient(0, chartArea.top, 0, chartArea.bottom);
+    g.addColorStop(0, rgba(hex, horizontal ? fuerte / 3 : fuerte)); g.addColorStop(1, rgba(hex, horizontal ? fuerte : 0.01)); return g;
+  };
+}
+let chartListo = false;
+function prepararChart() {
+  Chart.defaults.font.family = "Montserrat, system-ui, sans-serif"; Chart.defaults.font.size = 12; Chart.defaults.color = cssVar("--gris-2");
+  Chart.defaults.borderColor = cssVar("--linea");
+  if (chartListo) return; chartListo = true;
+  Object.assign(Chart.defaults.plugins.tooltip, { backgroundColor: "rgba(0,40,24,.94)", titleColor: "#FBE122", bodyColor: "#fff", padding: 12, cornerRadius: 12,
+    boxPadding: 5, usePointStyle: true, titleFont: { weight: "800", size: 13 }, bodyFont: { weight: "600" }, caretSize: 7, borderColor: "rgba(251,225,34,.35)", borderWidth: 1 });
+  Object.assign(Chart.defaults.plugins.legend.labels, { usePointStyle: true, pointStyle: "circle", boxWidth: 8, boxHeight: 8, padding: 16, font: { weight: "600" } });
+  Chart.defaults.plugins.legend.position = "bottom";
+  Object.assign(Chart.defaults.elements.point, { hoverRadius: 7, hoverBorderWidth: 3, hoverBackgroundColor: "#fff" });
+  Object.assign(Chart.defaults.elements.line, { borderWidth: 3, tension: .35, borderCapStyle: "round" });
+  Object.assign(Chart.defaults.elements.bar, { borderRadius: 8, borderSkipped: false });
+  Chart.defaults.animation.duration = 1100; Chart.defaults.animation.easing = "easeOutQuart";
+  Chart.register({ // línea vertical que sigue al cursor
+    id: "cruz", afterDatasetsDraw(ch) {
+      const act = ch.tooltip?.getActiveElements?.() || []; if (!act.length || ch.config.type !== "line") return;
+      const { ctx, chartArea } = ch, x = act[0].element.x;
+      ctx.save(); ctx.strokeStyle = rgba("#00482B", .35); ctx.setLineDash([4, 4]); ctx.lineWidth = 1.5;
+      ctx.beginPath(); ctx.moveTo(x, chartArea.top); ctx.lineTo(x, chartArea.bottom); ctx.stroke(); ctx.restore();
+    } });
+  Chart.register({ // marca una fecha (p. ej. el inicio de las políticas) y sombrea el futuro
+    id: "marca", beforeDatasetsDraw(ch, _a, o) {
+      if (!o || !o.etiqueta) return;
+      const i = ch.data.labels.indexOf(o.etiqueta); if (i < 0) return;
+      const { ctx, chartArea } = ch, x = ch.scales.x.getPixelForValue(i);
+      ctx.save(); ctx.fillStyle = rgba("#DAAA00", .07); ctx.fillRect(x, chartArea.top, chartArea.right - x, chartArea.bottom - chartArea.top);
+      ctx.strokeStyle = rgba("#DAAA00", .9); ctx.setLineDash([6, 5]); ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.moveTo(x, chartArea.top); ctx.lineTo(x, chartArea.bottom); ctx.stroke(); ctx.setLineDash([]);
+      ctx.font = "700 11px Montserrat, sans-serif"; const w = ctx.measureText(o.texto).width + 16;
+      ctx.fillStyle = "#FBE122"; ctx.beginPath(); ctx.roundRect(x + 6, chartArea.top + 6, w, 22, 11); ctx.fill();
+      ctx.fillStyle = "#00482B"; ctx.textBaseline = "middle"; ctx.fillText(o.texto, x + 14, chartArea.top + 17); ctx.restore();
+    } });
+  Chart.register({ // número grande en el centro de las donas
+    id: "centro", afterDraw(ch, _a, o) {
+      if (!o || o.valor === undefined || ch.config.type !== "doughnut") return;
+      const m = ch.getDatasetMeta(0).data[0]; if (!m) return;
+      const { ctx } = ch; ctx.save(); ctx.textAlign = "center"; ctx.textBaseline = "middle";
+      ctx.fillStyle = cssVar("--tinta"); ctx.font = "800 26px Montserrat, sans-serif"; ctx.fillText(o.valor, m.x, m.y - 8);
+      ctx.fillStyle = cssVar("--gris-2"); ctx.font = "600 11px Montserrat, sans-serif"; ctx.fillText(o.texto, m.x, m.y + 15); ctx.restore();
+    } });
+}
 function grafica(canvas, config) {
   if (!window.Chart || !canvas.isConnected) return;
-  Chart.defaults.font.family = "Montserrat, system-ui, sans-serif"; Chart.defaults.color = cssVar("--gris-2");
+  prepararChart();
+  const o = config.options = config.options || {};
+  o.responsive = true; o.maintainAspectRatio = false;
+  if (config.type === "line" && !o.animation) o.animation = { delay: (c) => (c.type === "data" && c.mode === "default" ? c.dataIndex * 18 : 0) };
+  if (config.type === "bar" && !o.animation) o.animation = { delay: (c) => (c.type === "data" && c.mode === "default" ? c.dataIndex * 60 : 0) };
   graficas.push(new Chart(canvas, config));
+  return graficas[graficas.length - 1];
 }
+const ejes = (extra = {}) => ({ x: { grid: { display: false }, ticks: { maxTicksLimit: 10, maxRotation: 0 }, border: { display: false } },
+  y: { grid: { color: cssVar("--linea") }, border: { display: false }, ...extra } });
 
 function tarjetaCapacidad(cap, periodo) {
   const etiqueta = { verde: "Hay capacidad", ambar: "Cerca del límite", rojo: "Capacidad superada" }[cap.semaforo];
@@ -667,13 +745,19 @@ async function vistaTablero(main, escenario = "E0 Base") {
   animarBarras(main);
   const labels = t.serie.map((s) => s.periodo);
   const serie = (fuente, k, mult = 1) => t.serie.map((s) => (s[fuente] ? +(s[fuente][k] * mult).toFixed(2) : null));
-  const opc = { responsive: true, maintainAspectRatio: false, interaction: { mode: "index", intersect: false },
-    plugins: { legend: { position: "bottom", labels: { usePointStyle: true, boxWidth: 8 } }, tooltip: { backgroundColor: COLOR.verdeOsc, padding: 10, cornerRadius: 8 } },
-    scales: { x: { ticks: { maxTicksLimit: 10 }, grid: { display: false } }, y: { grid: { color: cssVar("--linea") } } } };
-  const real = (k, m) => ({ label: "Real (sistema)", data: serie("real", k, m), borderColor: COLOR.verde, backgroundColor: "rgba(0,123,62,.12)", fill: true, tension: .3, pointRadius: 2.5, borderWidth: 2.5 });
-  const sim = (k, m) => ({ label: "Simulado · " + t.escenario, data: serie("simulado", k, m), borderColor: COLOR.oro, borderDash: [6, 4], pointRadius: 0, tension: .3, borderWidth: 2.5 });
-  grafica(c1, { type: "line", data: { labels, datasets: [real("desercion_periodo", 100), sim("desercion_periodo", 100)] }, options: opc });
-  grafica(c2, { type: "line", data: { labels, datasets: [real("matriculados"), sim("matriculados")] }, options: opc });
+  const opc = (sufijo) => ({ interaction: { mode: "index", intersect: false },
+    plugins: { marca: { etiqueta: "2026-1", texto: "Inicio de las políticas" }, legend: { labels: { filter: (it) => !it.text.startsWith("_") } },
+      tooltip: { filter: (it) => it.datasetIndex < 2, callbacks: { label: (c) => {
+      const base = ` ${c.dataset.label}: ${fmt(c.parsed.y, 2)}${sufijo}`; if (c.datasetIndex !== 1) return base;
+      const ds = c.chart.data.datasets, lo = ds[2].data[c.dataIndex], hi = ds[3].data[c.dataIndex];
+      return lo === null ? base : [base, `   margen aceptable: ${fmt(lo, 2)} – ${fmt(hi, 2)}${sufijo}`]; } } } },
+    scales: ejes({ ticks: { callback: (v) => v + sufijo } }) });
+  const real = (k, m) => ({ label: "Real (sistema)", data: serie("real", k, m), borderColor: COLOR.verde, backgroundColor: degradado(COLOR.verde), fill: "origin", pointRadius: 3, pointBackgroundColor: COLOR.verde, pointBorderColor: "#fff", pointBorderWidth: 1.5, order: 1 });
+  const sim = (k, m) => ({ label: "Simulado · " + t.escenario, data: serie("simulado", k, m), borderColor: COLOR.oro, borderDash: [7, 5], pointRadius: 0, order: 2 });
+  const banda = (k, m, signo) => ({ label: signo < 0 ? "_inf" : `Margen de tolerancia ±${fmt(100 * t.tolerancia, 0)} %`, data: serie("simulado", k, m).map((v) => (v === null ? null : +(v * (1 + signo * t.tolerancia)).toFixed(2))),
+    borderWidth: 0, pointRadius: 0, pointHoverRadius: 0, fill: signo > 0 ? "-1" : false, backgroundColor: rgba("#DAAA00", .16), borderColor: rgba("#DAAA00", .4), order: 3 });
+  grafica(c1, { type: "line", data: { labels, datasets: [real("desercion_periodo", 100), sim("desercion_periodo", 100), banda("desercion_periodo", 100, -1), banda("desercion_periodo", 100, 1)] }, options: opc(" %") });
+  grafica(c2, { type: "line", data: { labels, datasets: [real("matriculados"), sim("matriculados"), banda("matriculados", 1, -1), banda("matriculados", 1, 1)] }, options: opc("") });
 }
 
 // ------------------------------------------------------------------ cola de Bienestar (ruta de permanencia integral)
@@ -682,6 +766,7 @@ async function vistaCola(main) {
   pendientesCola = q.casos.length; pintarMenu(); marcarActual();
   const atiende = puede([A, O]);
   const maxP = Math.max(1, ...q.casos.map((c) => c.prioridad || 0));
+  const donaNivel = el("canvas", { role: "img", "aria-label": "Casos por nivel de riesgo" }), barrasApoyo = el("canvas", { role: "img", "aria-label": "Casos por apoyo sugerido" });
   const cab = ["#", "Prioridad", "Nivel", "Semestre", "Etapa", "Básicas perdidas", "Promedio", "Apoyo sugerido", "Id estudiante"].concat(atiende ? ["Acción"] : []);
   const filas = q.casos.map((c, i) => {
     const vals = [el("b", {}, i + 1),
@@ -695,9 +780,22 @@ async function vistaCola(main) {
     cabecera("cola", `Cola de Bienestar · ${q.periodo}`, "Casos sin atender ordenados por una regla pública: nivel de la alerta, semestre (los primeros pesan más porque ahí la deserción es mayor) y materias básicas perdidas. La regla no usa estrato ni condición laboral."),
     ayudaVista("cola"),
     el("div", { class: "rejilla" }, tarjetaCapacidad(q.capacidad, q.periodo), kpi(q.casos.length ? "kpi-oro" : "kpi-verde", "cola", "Casos pendientes", String(q.casos.length), q.casos.length ? "Empieza por el primero de la lista" : "¡Todo al día!")),
+    q.casos.length ? el("div", { class: "dos-col" },
+      el("section", { class: "tarjeta" }, el("h2", {}, icono("alertas"), "Casos por nivel de riesgo"), el("div", { class: "grafica grafica-baja" }, donaNivel)),
+      el("section", { class: "tarjeta" }, el("h2", {}, icono("apoyos"), "Apoyos que se van a necesitar"), el("div", { class: "grafica grafica-baja" }, barrasApoyo))) : null,
     q.casos.length ? el("div", { class: "tabla-env apilable" }, el("table", {}, el("thead", {}, el("tr", {}, cab.map((h) => el("th", { scope: "col" }, h)))), el("tbody", {}, filas)))
       : el("div", { class: "vacio tarjeta" }, el("div", { class: "vacio-ic" }, icono("check")), el("b", {}, "No hay casos pendientes"), "Todas las alertas del periodo ya fueron atendidas."));
   animarBarras(main);
+  if (q.casos.length) {
+    const cuenta = (k) => q.casos.reduce((m, c) => ((m[c[k] || "—"] = (m[c[k] || "—"] || 0) + 1), m), {});
+    const niv = cuenta("nivel"), ord = ["alto", "medio", "bajo"].filter((n) => niv[n]);
+    grafica(donaNivel, { type: "doughnut", data: { labels: ord.map((n) => "Riesgo " + n), datasets: [{ data: ord.map((n) => niv[n]),
+      backgroundColor: ord.map((n) => ({ alto: COLOR.rojo, medio: COLOR.naranja, bajo: "#9aa8a0" })[n]), borderColor: cssVar("--sup"), borderWidth: 4, hoverOffset: 12, borderRadius: 6, spacing: 2 }] },
+      options: { cutout: "66%", plugins: { centro: { valor: String(q.casos.length), texto: "casos" }, legend: { position: window.innerWidth < 600 ? "bottom" : "right" } } } });
+    const apo = Object.entries(cuenta("apoyo_sugerido")).sort((a, b) => b[1] - a[1]);
+    grafica(barrasApoyo, { type: "bar", data: { labels: apo.map((a) => a[0]), datasets: [{ label: "Casos", data: apo.map((a) => a[1]), backgroundColor: degradado(COLOR.verde, .95, true), borderWidth: 0, barThickness: 22 }] },
+      options: { indexAxis: "y", plugins: { legend: { display: false } }, scales: { x: { grid: { color: cssVar("--linea") }, border: { display: false }, ticks: { precision: 0 } }, y: { grid: { display: false }, border: { display: false } } } } });
+  }
 }
 
 function atender(caso, alTerminar) {
@@ -745,9 +843,9 @@ async function vistaReportes(main, rid) {
   const iy = rep.columnas.length - 1;
   const barras = rid === "desercion-nivel";
   grafica(lienzo, { type: barras ? "bar" : "line", data: { labels: rep.filas.map((f) => String(f[0])), datasets: [
-    { label: rep.columnas[iy], data: rep.filas.map((f) => (typeof f[iy] === "number" ? f[iy] : null)), borderColor: COLOR.verde, backgroundColor: barras ? COLOR.verde : "rgba(0,123,62,.12)", fill: !barras, tension: .3, borderRadius: 6, borderWidth: 2.5 },
-    ...(barras ? [{ label: rep.columnas[4], data: rep.filas.map((f) => f[4]), backgroundColor: COLOR.oro, borderRadius: 6 }] : [])] },
-    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: "bottom", labels: { usePointStyle: true, boxWidth: 8 } } }, scales: { x: { grid: { display: false } }, y: { grid: { color: cssVar("--linea") } } } } });
+    { label: rep.columnas[iy], data: rep.filas.map((f) => (typeof f[iy] === "number" ? f[iy] : null)), borderColor: COLOR.verde, backgroundColor: barras ? degradado(COLOR.verde, .95) : degradado(COLOR.verde), fill: !barras, pointRadius: barras ? 0 : 3, pointBackgroundColor: COLOR.verde, pointBorderColor: "#fff", borderWidth: barras ? 0 : 3 },
+    ...(barras ? [{ label: rep.columnas[4], data: rep.filas.map((f) => f[4]), backgroundColor: degradado(COLOR.oro, .95), borderWidth: 0 }] : [])] },
+    options: { interaction: { mode: "index", intersect: false }, scales: ejes() } });
 }
 
 // ------------------------------------------------------------------ parámetros y carga de proyecciones
@@ -986,9 +1084,9 @@ async function fichaEstudiante(id) {
   contarValores($("#modal-cuerpo"));
   if (graficaFicha) graficaFicha.destroy();
   if (window.Chart && ms.length) {
-    Chart.defaults.font.family = "Montserrat, system-ui, sans-serif"; Chart.defaults.color = cssVar("--gris-2");
+    prepararChart();
     graficaFicha = new Chart(lienzo, { type: "line", data: { labels: ms.map((m) => nombrePeriodo(m.periodo_id)), datasets: [
-      { label: "Promedio", data: ms.map((m) => m.promedio), borderColor: COLOR.verde, backgroundColor: "rgba(0,123,62,.15)", fill: true, tension: .35, pointRadius: 4, pointBackgroundColor: ms.map((m) => (m.promedio < 3 ? COLOR.rojo : COLOR.verde)) },
+      { label: "Promedio", data: ms.map((m) => m.promedio), borderColor: COLOR.verde, backgroundColor: degradado(COLOR.verde), fill: "origin", pointRadius: 5, pointBorderColor: "#fff", pointBorderWidth: 2, pointBackgroundColor: ms.map((m) => (m.promedio < 3 ? COLOR.rojo : COLOR.verde)) },
       { label: "Mínimo aprobatorio (3,0)", data: ms.map(() => 3), borderColor: COLOR.oro, borderDash: [5, 4], pointRadius: 0, borderWidth: 2 }] },
       options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: "bottom", labels: { usePointStyle: true, boxWidth: 8 } } }, scales: { y: { min: 0, max: 5, grid: { color: cssVar("--linea") } }, x: { grid: { display: false } } } } });
   }
@@ -1060,12 +1158,12 @@ async function vistaLaboratorio(main) {
       el("div", { class: "grafica" }, lienzo2),
       el("p", { class: "ayuda-campo" }, "Aproximación encadenando la tasa de deserción observada en cada semestre (reporte «Deserción por semestre»); no descuenta rezagos ni reingresos.")));
   pintarFoto(); contarValores(main);
-  const opc = { responsive: true, maintainAspectRatio: false, interaction: { mode: "index", intersect: false },
-    plugins: { legend: { display: false }, tooltip: { backgroundColor: COLOR.verdeOsc, padding: 10, cornerRadius: 8 } },
-    scales: { x: { ticks: { maxTicksLimit: 10 }, grid: { display: false } }, y: { grid: { color: cssVar("--linea") }, ticks: { callback: (v) => v + " %" } } } };
+  const opc = { interaction: { mode: "index", intersect: false },
+    plugins: { legend: { display: false }, marca: { etiqueta: "2026-1", texto: "Inicio de las políticas" }, tooltip: { callbacks: { label: (c) => ` ${c.dataset.label}: ${fmt(c.parsed.y, 2)} %` } } },
+    scales: ejes({ ticks: { callback: (v) => v + " %" } }) };
   const gris = cssVar("--gris-2") || "#6b746f";
-  const datasets = [{ label: "Real", data: series[0].serie.map((s) => (s.real ? +(100 * s.real.desercion_periodo).toFixed(2) : null)), borderColor: gris, backgroundColor: gris, pointRadius: 2.5, borderWidth: 2.5, tension: .3 },
-    ...nombres.map((nm2, i) => ({ label: nm2, data: series[i].serie.map((s) => (s.simulado ? +(100 * s.simulado.desercion_periodo).toFixed(2) : null)), borderColor: COLORES_ESC[i % COLORES_ESC.length], borderWidth: 2.5, pointRadius: 0, tension: .3, borderDash: i === 0 ? [6, 4] : [] }))];
+  const datasets = [{ label: "Real", data: series[0].serie.map((s) => (s.real ? +(100 * s.real.desercion_periodo).toFixed(2) : null)), borderColor: gris, backgroundColor: gris, pointRadius: 3, pointBorderColor: "#fff", pointBorderWidth: 1.5 },
+    ...nombres.map((nm2, i) => ({ label: nm2, data: series[i].serie.map((s) => (s.simulado ? +(100 * s.simulado.desercion_periodo).toFixed(2) : null)), borderColor: COLORES_ESC[i % COLORES_ESC.length], backgroundColor: degradado(COLORES_ESC[i % COLORES_ESC.length], .12), fill: i === nombres.length - 1 ? "origin" : false, borderWidth: 3, pointRadius: 0, borderDash: i === 0 ? [7, 5] : [] }))];
   grafica(lienzo, { type: "line", data: { labels: periodos, datasets }, options: opc });
   const g = graficas[graficas.length - 1];
   datasets.forEach((d, i) => {
@@ -1075,8 +1173,8 @@ async function vistaLaboratorio(main) {
     conm.append(b);
   });
   grafica(lienzo2, { type: "bar", data: { labels: filas.map((f) => "Sem. " + f[0]), datasets: [
-    { type: "bar", label: "Observado en el sistema", data: obs, backgroundColor: obs.map((_, i) => `rgba(0,123,62,${1 - i * 0.06})`), borderRadius: 8 },
-    { type: "line", label: "Modelo calibrado", data: mod, borderColor: COLOR.oro, backgroundColor: COLOR.oro, borderWidth: 2.5, pointRadius: 3, tension: .3 }] },
-    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: "bottom", labels: { usePointStyle: true, boxWidth: 8 } } },
-      scales: { y: { min: 0, max: 100, grid: { color: cssVar("--linea") }, title: { display: true, text: "Estudiantes de cada 100" } }, x: { grid: { display: false } } } } });
+    { type: "bar", label: "Observado en el sistema", data: obs, backgroundColor: degradado(COLOR.verde, .95), borderWidth: 0, order: 2 },
+    { type: "line", label: "Modelo calibrado", data: mod, borderColor: COLOR.oro, backgroundColor: COLOR.oro, pointRadius: 4, pointBorderColor: "#fff", pointBorderWidth: 2, order: 1 }] },
+    options: { interaction: { mode: "index", intersect: false }, plugins: { tooltip: { callbacks: { label: (c) => ` ${c.dataset.label}: ${fmt(c.parsed.y, 1)} de cada 100` } } },
+      scales: ejes({ min: 0, max: 100, title: { display: true, text: "Estudiantes de cada 100", font: { weight: "700" } } }) } });
 }
