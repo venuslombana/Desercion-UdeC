@@ -62,6 +62,14 @@ const ICONOS = {
   izq: "M15 18l-6-6 6-6", der: "M9 18l6-6-6-6", simulacion: "M21 12a9 9 0 1 1-3-6.7|M21 3v6h-6", subir: "M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4|M17 8l-5-5-5 5|M12 3v12",
   objetivo: "M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20|M12 18a6 6 0 1 0 0-12 6 6 0 0 0 0 12|M12 14a2 2 0 1 0 0-4 2 2 0 0 0 0 4",
   personas: "M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2|M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8",
+  luna: "M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z",
+  sol: "M12 17a5 5 0 1 0 0-10 5 5 0 0 0 0 10|M12 1v2|M12 21v2|M4.2 4.2l1.4 1.4|M18.4 18.4l1.4 1.4|M1 12h2|M21 12h2|M4.2 19.8l1.4-1.4|M18.4 5.6l1.4-1.4",
+  trofeo: "M8 21h8|M12 17v4|M7 4h10v5a5 5 0 0 1-10 0z|M17 5h3v2a3 3 0 0 1-3 3|M7 5H4v2a3 3 0 0 0 3 3",
+  reloj: "M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20|M12 6v6l4 2",
+  laboratorio: "M9 3h6|M10 3v6L4.5 18.5A2 2 0 0 0 6.2 21h11.6a2 2 0 0 0 1.7-2.5L14 9V3|M7 15h10",
+  embudo: "M3 4h18l-7 9v6l-4 2v-8z",
+  ficha: "M4 4h16a1 1 0 0 1 1 1v14a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1z|M9 11a2 2 0 1 0 0-4 2 2 0 0 0 0 4|M6 16a3 3 0 0 1 6 0|M14 9h4|M14 13h4",
+  teclado: "M3 6h18v12H3z|M7 10h.01|M11 10h.01|M15 10h.01|M7 14h10",
 };
 function icono(nombre, cls = "") {
   const ns = "http://www.w3.org/2000/svg";
@@ -74,6 +82,7 @@ function pintarIconosEstaticos(raiz = document) {
   raiz.querySelectorAll("[data-icono]").forEach((n) => { if (!n.querySelector("svg")) n.prepend(icono(n.dataset.icono)); });
 }
 
+const cssVar = (n) => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
 function aviso(texto, tipo = "") {
   const ic = { ok: "check", error: "factores", ambar: "alertas" }[tipo] || "info";
   const a = el("div", { class: "aviso " + (tipo ? "aviso-" + tipo : ""), role: tipo === "error" ? "alert" : "status" }, icono(ic), el("span", {}, texto));
@@ -234,6 +243,8 @@ const AYUDA = {
     pasos: ["Elige un escenario arriba a la derecha (E0 es la situación actual; E3 es la política recomendada).", "Mira las tarjetas: si dicen «dentro del margen», el modelo está prediciendo bien.", "Si alguna dice «recalibrar», la diferencia pasó del 15 % y hay que volver a ajustar el modelo con los datos nuevos."] },
   cola: { que: "Es la lista de estudiantes con una alerta sin atender. Está ordenada por prioridad para que Bienestar empiece por quien más lo necesita.",
     pasos: ["Revisa el semáforo: indica si Bienestar todavía tiene capacidad este semestre.", "Empieza por el primer caso de la lista (mayor prioridad).", "Pulsa «Atender», confirma el apoyo sugerido y listo: el caso sale de la cola."] },
+  laboratorio: { que: "Aquí se ve qué pasaría con la deserción si la universidad aplica cada política. Los números salen del modelo de simulación en Vensim (dinámica de sistemas) y se comparan con lo que pasó de verdad.",
+    pasos: ["Prende o apaga escenarios con los botones de colores para comparar sus curvas.", "Mueve la «máquina del tiempo» para ver cada semestre de 2026 a 2030.", "Mira las tarjetas: el trofeo marca el escenario con menos deserción y cuántos estudiantes más se quedan frente a no hacer nada (E0).", "Abajo, el embudo muestra de cada 100 estudiantes que entran, cuántos siguen en cada semestre."] },
   reportes: { que: "Indicadores calculados automáticamente con los datos registrados. Todos se pueden descargar.", pasos: ["Elige un reporte en la lista.", "Revisa la gráfica y la tabla.", "Descárgalo en CSV (Excel) o PDF para el informe."] },
   estudiantes: { que: "Cada estudiante aparece solo con un código anónimo: nunca se guardan nombres ni documentos (Ley 1581 de 2012).", pasos: ["Usa los filtros para ver una cohorte o un estrato.", "Pulsa «Nuevo» para registrar un estudiante.", "Toca un encabezado de columna para ordenar."] },
   matriculas: { que: "Un registro por estudiante en cada semestre: qué semestre cursa, su promedio y cómo terminó (continúa, deserta o se gradúa). Es la información que alimenta la simulación.", pasos: ["Filtra por periodo o por resultado.", "Registra una matrícula con «Nuevo».", "El resultado «Deserta» es el que cuentan los indicadores de deserción."] },
@@ -272,7 +283,7 @@ const esqueleto = () => el("div", {}, el("div", { class: "esqueleto", style: nul
 // ------------------------------------------------------------------ navegación
 const VISTAS = [
   { grupo: "Inicio", items: [["inicio", "Inicio", [A, O, C], "inicio"]] },
-  { grupo: "Seguimiento", items: [["tablero", "Tablero real vs. simulado", [A, O, C], "tablero"], ["cola", "Cola de Bienestar", [A, O, C], "cola"], ["reportes", "Reportes y exportación", [A, O, C], "reportes"]] },
+  { grupo: "Seguimiento", items: [["tablero", "Tablero real vs. simulado", [A, O, C], "tablero"], ["laboratorio", "Laboratorio de escenarios", [A, O, C], "laboratorio"], ["cola", "Cola de Bienestar", [A, O, C], "cola"], ["reportes", "Reportes y exportación", [A, O, C], "reportes"]] },
   { grupo: "Registro", items: [["estudiantes", "Estudiantes", [A, O, C], "estudiantes"], ["matriculas", "Matrículas", [A, O, C], "matriculas"], ["alertas", "Alertas tempranas", [A, O, C], "alertas"],
     ["apoyos", "Apoyos asignados", [A, O, C], "apoyos"], ["estudiante-factores", "Factores por estudiante", [A, O, C], "estudiante-factores"]] },
   { grupo: "Catálogos", items: [["cohortes", "Cohortes", [A, O, C], "cohortes"], ["periodos", "Periodos", [A, O, C], "periodos"], ["programas", "Programas", [A, O, C], "programas"],
@@ -280,7 +291,7 @@ const VISTAS = [
   { grupo: "Administración", items: [["parametros", "Parámetros y proyecciones", [A, O, C], "parametros"], ["usuarios", "Usuarios", [A], "usuarios"], ["auditoria", "Auditoría", [A], "auditoria"]] },
 ];
 const NAV_MOVIL = [["inicio", "Inicio"], ["tablero", "Tablero"], ["cola", "Cola"], ["alertas", "Alertas"]];
-let pendientesCola = null, abrirNuevo = null;
+let pendientesCola = null, abrirNuevo = null, turnoRuta = 0;
 
 function contador() { return pendientesCola ? el("span", { class: "contador", "aria-label": pendientesCola + " casos pendientes" }, pendientesCola) : null; }
 function pintarMenu() {
@@ -312,18 +323,22 @@ async function router() {
   const id = (location.hash || "#inicio").slice(1);
   const permitido = VISTAS.flatMap((g) => g.items).find(([v]) => v === id);
   marcarActual(); alternarMenu(false); if (!$("#modal").hidden) cerrarModal();
-  const main = $("#contenido"); main.replaceChildren(esqueleto());
+  const real = $("#contenido"), turno = ++turnoRuta; real.replaceChildren(esqueleto());
+  // Si el usuario cambia de sección antes de que termine de cargar la anterior, la respuesta vieja se descarta.
+  const main = { replaceChildren: (...n) => { if (turno === turnoRuta) real.replaceChildren(...n); }, querySelectorAll: (q) => real.querySelectorAll(q), focus: (o) => real.focus(o), style: real.style, get offsetWidth() { return real.offsetWidth; } };
   main.style.animation = "none"; void main.offsetWidth; main.style.animation = "";
   graficas.forEach((g) => g.destroy()); graficas = [];
   try {
     if (!permitido || !puede(permitido[2])) { main.replaceChildren(el("div", { class: "nota nota-rojo" }, icono("candado"), "Su rol no tiene acceso a esta sección.")); return; }
     if (id === "inicio") await vistaInicio(main);
     else if (id === "tablero") await vistaTablero(main);
+    else if (id === "laboratorio") await vistaLaboratorio(main);
     else if (id === "cola") await vistaCola(main);
     else if (id === "reportes") await vistaReportes(main);
     else if (id === "parametros") await vistaParametros(main);
     else await vistaListado(main, id);
   } catch (e) { if (e.status !== 401) main.replaceChildren(el("div", { class: "nota nota-rojo", role: "alert" }, icono("factores"), "No se pudo cargar la sección: " + e.message)); }
+  contarValores(main);
   main.focus({ preventScroll: true }); window.scrollTo({ top: 0 });
 }
 
@@ -337,6 +352,7 @@ const ACCIONES = [
   ["alertas", "Registrar una alerta", "Marca a un estudiante en riesgo y recibe el apoyo sugerido.", [A, O], "alertas", true],
   ["cola", "Atender la cola", "Asigna apoyos a los casos en orden de prioridad.", [A, O], "cola"],
   ["tablero", "Ver el tablero", "Compara la deserción real con la simulada.", [A, O, C], "tablero"],
+  ["laboratorio", "Explorar escenarios", "Compara las políticas simuladas y su efecto hasta 2030.", [A, O, C], "laboratorio"],
   ["reportes", "Descargar reportes", "Indicadores en CSV o PDF listos para el informe.", [A, O, C], "reportes"],
   ["matriculas", "Registrar una matrícula", "Agrega el resultado de un estudiante en el semestre.", [A, O], "matriculas", true],
   ["estudiantes", "Consultar estudiantes", "Busca por cohorte, estrato o condición laboral.", [C], "estudiantes"],
@@ -400,8 +416,8 @@ const PASOS_TOUR = [
   ["inicio", "Bienvenido a Permanencia UdeC", "Un sistema de alerta temprana para la deserción en Ingeniería de Sistemas y Computación, seccional Fusagasugá. Te mostramos cómo se usa en cuatro pasos."],
   ["alertas", "1. Registra y detecta", "En «Registro» se guardan las matrículas de cada semestre y las alertas tempranas. Al crear una alerta, el sistema sugiere qué apoyo darle al estudiante."],
   ["cola", "2. Atiende en orden", "La «Cola de Bienestar» ordena los casos por prioridad. El semáforo te avisa si Bienestar todavía tiene capacidad."],
-  ["tablero", "3. Compara con la simulación", "El «Tablero» pone lo real junto a lo que predijo el modelo. Si la diferencia pasa del 15 %, el modelo se recalibra."],
-  ["ayuda", "4. Siempre hay ayuda", "Cada pantalla tiene un recuadro amarillo «¿Para qué sirve esta pantalla?» con los pasos a seguir. En el celular, usa la barra de abajo para moverte."],
+  ["laboratorio", "3. Compara y simula", "El «Tablero» pone lo real junto a lo que predijo el modelo, y el «Laboratorio de escenarios» muestra qué pasaría hasta 2030 con cada política."],
+  ["teclado", "4. Encuentra todo al instante", "Pulsa Ctrl + K (o la lupa) para buscar cualquier sección o un estudiante por su código y abrir su ficha completa. Cada pantalla trae además un recuadro amarillo de ayuda."],
 ];
 function recorrido(i) {
   const [ic, tit, txt] = PASOS_TOUR[i];
@@ -418,6 +434,7 @@ function valorCelda(c, v, cf) {
   if (v === null || v === undefined || v === "") return "—";
   if (typeof v === "boolean") return el("span", { class: "chip " + (v ? "chip-ok" : "chip-gris") }, v ? "Sí" : "No");
   if (CHIPS[c] && CHIPS[c][v]) return el("span", { class: "chip " + CHIPS[c][v] }, TEXTO_CHIP[v] || v);
+  if (c === "estudiante_id") return el("button", { type: "button", class: "btn-enlace", onclick: () => fichaEstudiante(v), title: "Ver ficha del estudiante" }, icono("ficha"), String(v));
   if (cf?.ref) return String(etiquetaRef(cf.ref, v));
   if (c === "periodo_id" || c === "periodo_ingreso_id") return String(nombrePeriodo(v));
   if (c === "fecha") return new Date(v + "Z").toLocaleString("es-CO");
@@ -466,7 +483,8 @@ async function vistaListado(main, id) {
       return el("th", { scope: "col", "aria-sort": estado.sort === c ? (estado.order === "asc" ? "ascending" : "descending") : null },
         el("button", { type: "button", onclick: () => { estado.order = estado.sort === c && estado.order === "asc" ? "desc" : "asc"; estado.sort = c; cargar(); } }, titulo(c) + flecha));
     });
-    const acciones = puede(cfg.escribir) || puede(cfg.borrar);
+    const conFicha = id === "estudiantes";
+    const acciones = puede(cfg.escribir) || puede(cfg.borrar) || conFicha;
     if (acciones) th.push(el("th", { scope: "col" }, "Acciones"));
     const filas = items.map((it) => {
       const tds = cols.map((c) => {
@@ -475,6 +493,7 @@ async function vistaListado(main, id) {
       });
       if (acciones) {
         const td = el("td", { class: "acciones" });
+        if (conFicha) td.append(el("button", { class: "btn btn-chico btn-primario", type: "button", onclick: () => fichaEstudiante(it.id) }, icono("ficha"), "Ficha 360"));
         if (puede(cfg.escribir) && cfg.campos.length) td.append(el("button", { class: "btn btn-chico", type: "button", onclick: () => formulario(cfg, it, cargar), "aria-label": "Editar registro" }, icono("editar"), "Editar"));
         if (puede(cfg.borrar)) td.append(el("button", { class: "btn btn-chico btn-peligro", type: "button", onclick: () => confirmarBorrado(cfg, it, cargar), "aria-label": "Eliminar registro" }, icono("borrar"), "Eliminar"));
         tds.push(td);
@@ -497,10 +516,11 @@ async function vistaListado(main, id) {
 
 // ------------------------------------------------------------------ formularios con validación en el cliente
 function abrirModal(titulo, ...contenido) {
+  $("#modal .modal").classList.remove("modal-ancho");
   $("#modal-titulo").textContent = titulo; $("#modal-cuerpo").replaceChildren(...contenido); $("#modal").hidden = false;
   const primero = $("#modal-cuerpo").querySelector("input,select,textarea") || $("#modal-cuerpo").querySelector(".btn-primario"); if (primero) primero.focus();
 }
-function cerrarModal() { $("#modal").hidden = true; $("#modal-cuerpo").replaceChildren(); }
+function cerrarModal() { $("#modal").hidden = true; $("#modal-cuerpo").replaceChildren(); $("#modal .modal").classList.remove("modal-ancho"); }
 
 function mensajeValidacion(inp, c) {
   const v = inp.validity;
@@ -600,8 +620,8 @@ function confirmarBorrado(cfg, item, alBorrar) {
 let graficas = [];
 const COLOR = { verde: "#007B3E", verdeOsc: "#00482B", oro: "#DAAA00", amarillo: "#FBE122", turquesa: "#00A99D", naranja: "#F7931E", rojo: "#c0262d" };
 function grafica(canvas, config) {
-  if (!window.Chart) return;
-  Chart.defaults.font.family = "Montserrat, system-ui, sans-serif"; Chart.defaults.color = "#4D4D4D";
+  if (!window.Chart || !canvas.isConnected) return;
+  Chart.defaults.font.family = "Montserrat, system-ui, sans-serif"; Chart.defaults.color = cssVar("--gris-2");
   graficas.push(new Chart(canvas, config));
 }
 
@@ -649,7 +669,7 @@ async function vistaTablero(main, escenario = "E0 Base") {
   const serie = (fuente, k, mult = 1) => t.serie.map((s) => (s[fuente] ? +(s[fuente][k] * mult).toFixed(2) : null));
   const opc = { responsive: true, maintainAspectRatio: false, interaction: { mode: "index", intersect: false },
     plugins: { legend: { position: "bottom", labels: { usePointStyle: true, boxWidth: 8 } }, tooltip: { backgroundColor: COLOR.verdeOsc, padding: 10, cornerRadius: 8 } },
-    scales: { x: { ticks: { maxTicksLimit: 10 }, grid: { display: false } }, y: { grid: { color: "#e8eeea" } } } };
+    scales: { x: { ticks: { maxTicksLimit: 10 }, grid: { display: false } }, y: { grid: { color: cssVar("--linea") } } } };
   const real = (k, m) => ({ label: "Real (sistema)", data: serie("real", k, m), borderColor: COLOR.verde, backgroundColor: "rgba(0,123,62,.12)", fill: true, tension: .3, pointRadius: 2.5, borderWidth: 2.5 });
   const sim = (k, m) => ({ label: "Simulado · " + t.escenario, data: serie("simulado", k, m), borderColor: COLOR.oro, borderDash: [6, 4], pointRadius: 0, tension: .3, borderWidth: 2.5 });
   grafica(c1, { type: "line", data: { labels, datasets: [real("desercion_periodo", 100), sim("desercion_periodo", 100)] }, options: opc });
@@ -666,7 +686,7 @@ async function vistaCola(main) {
   const filas = q.casos.map((c, i) => {
     const vals = [el("b", {}, i + 1),
       el("span", { class: "prioridad" }, el("b", {}, fmt(c.prioridad)), el("span", { class: "barra-prog " + (c.nivel === "alto" ? "rojo" : c.nivel === "medio" ? "ambar" : "") }, el("span", { "data-ancho": Math.round((100 * c.prioridad) / maxP) }))),
-      el("span", { class: "chip " + CHIPS.nivel[c.nivel] }, c.nivel), c.nivel_semestre, c.etapa, c.materias_basicas_perdidas, fmt(c.promedio, 2), c.apoyo_sugerido || "—", c.estudiante_id];
+      el("span", { class: "chip " + CHIPS.nivel[c.nivel] }, c.nivel), c.nivel_semestre, c.etapa, c.materias_basicas_perdidas, fmt(c.promedio, 2), c.apoyo_sugerido || "—", el("button", { type: "button", class: "btn-enlace", onclick: () => fichaEstudiante(c.estudiante_id) }, icono("ficha"), String(c.estudiante_id))];
     const tds = vals.map((v, j) => el("td", { "data-label": cab[j], class: [0, 3, 5, 6, 8].includes(j) ? "num" : j === 7 ? "ajustar" : "" }, v));
     if (atiende) tds.push(el("td", { class: "acciones" }, el("button", { class: "btn btn-chico btn-primario", type: "button", onclick: () => atender(c, () => vistaCola(main)) }, icono("apoyos"), "Atender")));
     return el("tr", {}, tds);
@@ -727,7 +747,7 @@ async function vistaReportes(main, rid) {
   grafica(lienzo, { type: barras ? "bar" : "line", data: { labels: rep.filas.map((f) => String(f[0])), datasets: [
     { label: rep.columnas[iy], data: rep.filas.map((f) => (typeof f[iy] === "number" ? f[iy] : null)), borderColor: COLOR.verde, backgroundColor: barras ? COLOR.verde : "rgba(0,123,62,.12)", fill: !barras, tension: .3, borderRadius: 6, borderWidth: 2.5 },
     ...(barras ? [{ label: rep.columnas[4], data: rep.filas.map((f) => f[4]), backgroundColor: COLOR.oro, borderRadius: 6 }] : [])] },
-    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: "bottom", labels: { usePointStyle: true, boxWidth: 8 } } }, scales: { x: { grid: { display: false } }, y: { grid: { color: "#e8eeea" } } } } });
+    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: "bottom", labels: { usePointStyle: true, boxWidth: 8 } } }, scales: { x: { grid: { display: false } }, y: { grid: { color: cssVar("--linea") } } } } });
 }
 
 // ------------------------------------------------------------------ parámetros y carga de proyecciones
@@ -811,9 +831,252 @@ document.addEventListener("DOMContentLoaded", () => {
   $("#btn-menu").addEventListener("click", () => alternarMenu(!$("#menu").classList.contains("abierto")));
   $("#velo").addEventListener("click", () => alternarMenu(false));
   $("#btn-recorrido").addEventListener("click", () => recorrido(0));
+  $("#btn-tema").addEventListener("click", alternarTema); pintarBotonTema();
+  $("#btn-paleta").addEventListener("click", abrirPaleta);
   $("#modal-cerrar").addEventListener("click", cerrarModal);
   $("#modal").addEventListener("click", (e) => { if (e.target.id === "modal") cerrarModal(); });
-  document.addEventListener("keydown", (e) => { if (e.key === "Escape") { if (!$("#modal").hidden) cerrarModal(); else alternarMenu(false); } });
+  document.addEventListener("keydown", (e) => {
+    if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "k" && sesion.token && !$("#vista-app").hidden) { e.preventDefault(); abrirPaleta(); return; }
+    if (e.key === "Escape" && $("#paleta")) { cerrarPaleta(); return; }
+    if (e.key === "Escape") { if (!$("#modal").hidden) cerrarModal(); else alternarMenu(false); } });
   window.addEventListener("hashchange", () => { if (sesion.token) router(); });
   if (sesion.token) mostrarApp(); else mostrarLogin();
 });
+
+// ================================================================== versión 2: animaciones, tema, buscador, ficha 360 y laboratorio
+// ------------------------------------------------------------------ cifras que "cuentan" desde cero
+function contarValores(raiz) {
+  if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+  raiz.querySelectorAll(".valor, .mini-kpi b, .grande").forEach((nodo) => {
+    const t = nodo.firstChild; if (!t || t.nodeType !== 3) return;
+    const m = t.textContent.match(/^(-?[\d.]+(?:,\d+)?)(.*)$/); if (!m) return;
+    const dec = (m[1].split(",")[1] || "").length;
+    const fin = parseFloat(m[1].replace(/\./g, "").replace(",", ".")); if (!isFinite(fin)) return;
+    const sufijo = m[2], t0 = performance.now(), dur = 900;
+    const paso = (ahora) => {
+      const k = Math.min(1, (ahora - t0) / dur), e = 1 - Math.pow(1 - k, 3);
+      t.textContent = (fin * e).toLocaleString("es-CO", { minimumFractionDigits: dec, maximumFractionDigits: dec }) + sufijo;
+      if (k < 1) requestAnimationFrame(paso);
+    };
+    requestAnimationFrame(paso);
+  });
+}
+
+// ------------------------------------------------------------------ modo claro / oscuro
+function pintarBotonTema() {
+  const oscuro = document.documentElement.dataset.tema === "oscuro", b = $("#btn-tema");
+  b.replaceChildren(icono(oscuro ? "sol" : "luna")); b.setAttribute("aria-label", oscuro ? "Cambiar a modo claro" : "Cambiar a modo oscuro");
+}
+function alternarTema() {
+  const oscuro = document.documentElement.dataset.tema !== "oscuro";
+  if (oscuro) document.documentElement.dataset.tema = "oscuro"; else delete document.documentElement.dataset.tema;
+  almacen.guardar("tema", oscuro ? "oscuro" : "claro"); pintarBotonTema();
+  if (graficas.length) router(); // las gráficas se vuelven a dibujar con los colores del tema
+}
+
+// ------------------------------------------------------------------ buscador universal (Ctrl + K)
+const sinTildes = (x) => x.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
+function comandosBase() {
+  const lista = [];
+  for (const g of VISTAS) for (const [id, t, r, ic] of g.items) if (puede(r)) lista.push({ grupo: "Ir a", ic, t, sub: g.grupo, run: () => { location.hash = "#" + id; } });
+  if (puede([A, O])) {
+    lista.push({ grupo: "Acciones", ic: "alertas", t: "Registrar una alerta temprana", sub: "Abre el formulario", run: () => { abrirNuevo = "alertas"; location.hash === "#alertas" ? router() : (location.hash = "#alertas"); } });
+    lista.push({ grupo: "Acciones", ic: "matriculas", t: "Registrar una matrícula", sub: "Abre el formulario", run: () => { abrirNuevo = "matriculas"; location.hash === "#matriculas" ? router() : (location.hash = "#matriculas"); } });
+  }
+  const oscuro = document.documentElement.dataset.tema === "oscuro";
+  lista.push({ grupo: "Acciones", ic: oscuro ? "sol" : "luna", t: oscuro ? "Cambiar a modo claro" : "Cambiar a modo oscuro", sub: "Apariencia", run: alternarTema });
+  lista.push({ grupo: "Acciones", ic: "ruta", t: "Ver el recorrido guiado", sub: "Ayuda", run: () => recorrido(0) });
+  lista.push({ grupo: "Acciones", ic: "salir", t: "Cerrar sesión", sub: sesion.usuario?.nombre || "", run: () => $("#btn-salir").click() });
+  return lista;
+}
+function cerrarPaleta() { $("#paleta")?.remove(); }
+function abrirPaleta() {
+  if ($("#paleta")) return;
+  if (!$("#modal").hidden) cerrarModal();
+  let activo = 0, visibles = [], extra = [], temporizador;
+  const base = comandosBase();
+  const entrada = el("input", { type: "search", placeholder: "Busca una sección, una acción o el código de un estudiante…", "aria-label": "Buscar", autocomplete: "off", role: "combobox", "aria-expanded": "true", "aria-controls": "paleta-lista" });
+  const lista = el("ul", { class: "paleta-lista", id: "paleta-lista", role: "listbox" });
+  const fondo = el("div", { class: "paleta-fondo", id: "paleta", onclick: (e) => { if (e.target === fondo) cerrarPaleta(); } },
+    el("div", { class: "paleta", role: "dialog", "aria-modal": "true", "aria-label": "Buscador" },
+      el("div", { class: "paleta-entrada" }, icono("buscar"), entrada, el("kbd", {}, "Esc")), lista,
+      el("div", { class: "paleta-pie" }, el("span", {}, el("kbd", {}, "↑"), " ", el("kbd", {}, "↓"), " moverse"), el("span", {}, el("kbd", {}, "Enter"), " abrir"), el("span", {}, el("kbd", {}, "Ctrl K"), " abrir el buscador desde cualquier pantalla"))));
+  const pintar = () => {
+    const q = sinTildes(entrada.value.trim());
+    visibles = [...extra, ...base.filter((c) => !q || sinTildes(c.t + " " + c.sub).includes(q))];
+    activo = Math.min(activo, Math.max(0, visibles.length - 1));
+    lista.replaceChildren();
+    let grupo = null;
+    visibles.forEach((c, i) => {
+      if (c.grupo !== grupo) { grupo = c.grupo; lista.append(el("li", { class: "paleta-grupo", role: "presentation" }, grupo)); }
+      lista.append(el("li", { class: "paleta-item" + (i === activo ? " activo" : ""), role: "option", "aria-selected": String(i === activo), onmousemove: () => { if (activo !== i) { activo = i; pintar(); } }, onclick: () => ejecutar(i) },
+        el("span", { class: "pi-ic" }, icono(c.ic)), el("div", {}, c.t, el("small", {}, c.sub)), el("span", { class: "pi-flecha" }, icono("flecha"))));
+    });
+    if (!visibles.length) lista.append(el("li", { class: "vacio" }, "Sin resultados. Prueba con otra palabra."));
+    lista.querySelector(".activo")?.scrollIntoView({ block: "nearest" });
+  };
+  const ejecutar = (i) => { const c = visibles[i]; if (!c) return; cerrarPaleta(); c.run(); };
+  const buscarEstudiantes = async () => {
+    const q = entrada.value.trim(); extra = [];
+    if (/^\d+$/.test(q)) extra.push({ grupo: "Estudiantes", ic: "ficha", t: `Abrir la ficha del estudiante con id ${q}`, sub: "Ficha 360", run: () => fichaEstudiante(+q) });
+    if (q.length >= 3 && /^[A-Za-z0-9]+$/.test(q)) {
+      try {
+        const r = await api("/api/estudiantes?size=6&q=" + encodeURIComponent(q));
+        for (const e of r.items) extra.push({ grupo: "Estudiantes", ic: "ficha", t: e.codigo_anonimo, sub: `Id ${e.id} · ${etiquetaRef("cohortes", e.cohorte_id)} · estrato ${e.estrato}`, run: () => fichaEstudiante(e.id) });
+      } catch { /* sin resultados */ }
+    }
+    pintar();
+  };
+  entrada.addEventListener("input", () => { activo = 0; pintar(); clearTimeout(temporizador); temporizador = setTimeout(buscarEstudiantes, 250); });
+  entrada.addEventListener("keydown", (e) => {
+    if (e.key === "ArrowDown") { e.preventDefault(); activo = (activo + 1) % Math.max(1, visibles.length); pintar(); }
+    else if (e.key === "ArrowUp") { e.preventDefault(); activo = (activo - 1 + visibles.length) % Math.max(1, visibles.length); pintar(); }
+    else if (e.key === "Enter") { e.preventDefault(); ejecutar(activo); }
+  });
+  document.body.append(fondo); pintar(); entrada.focus();
+}
+
+// ------------------------------------------------------------------ ficha 360 del estudiante
+let graficaFicha = null;
+async function fichaEstudiante(id) {
+  abrirModal("Ficha del estudiante", el("div", {}, el("div", { class: "esqueleto alto" }), el("div", { class: "esqueleto" }), el("div", { class: "esqueleto alto" })));
+  $("#modal .modal").classList.add("modal-ancho");
+  let est, mats, apo, fac;
+  try {
+    [est, mats, apo, fac] = await Promise.all([api("/api/estudiantes/" + id), api(`/api/matriculas?estudiante_id=${id}&size=100&sort=periodo_id&order=asc`),
+      api(`/api/apoyos?estudiante_id=${id}&size=100`), api(`/api/estudiante-factores?estudiante_id=${id}&size=100`)]);
+  } catch (e) { $("#modal-cuerpo").replaceChildren(el("div", { class: "nota nota-rojo" }, icono("factores"), e.status === 404 ? `No existe un estudiante con id ${id}.` : e.message)); return; }
+  const ms = mats.items;
+  const alertas = (await Promise.all(ms.map((m) => api(`/api/alertas?matricula_id=${m.id}&size=50`).then((r) => r.items).catch(() => [])))).flat();
+  const ultimo = ms[ms.length - 1];
+  const estado = !ultimo ? "Sin matrículas" : { CONTINUA: "Activo", DESERTA: "Desertó", GRADUA: "Graduado" }[ultimo.resultado];
+  const promedio = ms.length ? ms.reduce((a, m) => a + m.promedio, 0) / ms.length : null;
+  const tipoApoyo = (tid) => cat["tipos-apoyo"].find((t) => t.id === tid)?.nombre || "Apoyo " + tid;
+  const factor = (fid) => cat.factores.find((f) => f.id === fid);
+  const lienzo = el("canvas", { role: "img", "aria-label": "Promedio por semestre" });
+  $("#modal-titulo").textContent = "Ficha 360 del estudiante";
+  $("#modal-cuerpo").replaceChildren(
+    el("div", { class: "ficha-cab" }, el("span", { class: "ficha-avatar" }, icono("usuario")),
+      el("div", {}, el("h3", {}, est.codigo_anonimo), el("div", {}, el("span", { class: "chip" }, `Id ${est.id}`), el("span", { class: "chip" }, etiquetaRef("cohortes", est.cohorte_id)),
+        el("span", { class: "chip" }, `Estrato ${est.estrato}`), el("span", { class: "chip" }, `Saber 11: ${est.puntaje_saber11}`), el("span", { class: "chip" }, est.trabaja ? "Trabaja" : "No trabaja"))),
+      el("div", { class: "ficha-estado" }, el("div", { class: "sub", style: null }, ""), el("span", { class: "chip" }, estado))),
+    el("div", { class: "mini-kpis" },
+      el("div", { class: "mini-kpi" }, el("span", {}, "Semestres cursados"), el("b", {}, String(ms.length))),
+      el("div", { class: "mini-kpi" }, el("span", {}, "Promedio general"), el("b", {}, promedio === null ? "—" : fmt(promedio, 2))),
+      el("div", { class: "mini-kpi" }, el("span", {}, "Alertas"), el("b", {}, String(alertas.length))),
+      el("div", { class: "mini-kpi" }, el("span", {}, "Apoyos recibidos"), el("b", {}, String(apo.items.length)))),
+    el("div", { class: "ficha-rejilla" },
+      el("section", {}, el("h3", { class: "seccion-titulo" }, icono("reloj"), "Trayectoria semestre a semestre"),
+        ms.length ? el("ol", { class: "linea-tiempo" }, ms.map((m) => el("li", { class: m.resultado === "DESERTA" ? "deserta" : m.resultado === "GRADUA" ? "gradua" : "" },
+          el("div", { class: "lt-cab" }, el("b", {}, nombrePeriodo(m.periodo_id)), `Semestre ${m.nivel_semestre}`, el("span", { class: "chip chip-gris" }, `Promedio ${fmt(m.promedio, 2)}`),
+            m.materias_basicas_perdidas ? el("span", { class: "chip chip-ambar" }, `${m.materias_basicas_perdidas} básica(s) perdida(s)`) : null, valorCelda("resultado", m.resultado)),
+          alertas.filter((a) => a.matricula_id === m.id).map((a) => el("div", { class: "lt-alerta" }, icono("alertas"), el("span", {}, el("b", {}, `Alerta ${a.nivel}: `), a.motivo, a.atendida ? " · atendida" : " · pendiente"))))))
+          : el("p", { class: "sub" }, "Este estudiante no tiene matrículas registradas.")),
+      el("section", {},
+        el("h3", { class: "seccion-titulo" }, icono("tablero"), "Promedio por semestre"), el("div", { class: "grafica", style: null }, lienzo),
+        el("h3", { class: "seccion-titulo" }, icono("factores"), "Factores de riesgo"),
+        fac.items.length ? el("div", { class: "lista-chips" }, fac.items.map((f) => { const fx = factor(f.factor_id);
+          return el("span", { class: "chip " + (CHIPS.tipo[fx?.tipo] || "chip-gris") }, (fx?.nombre || "Factor " + f.factor_id) + " · " + nombrePeriodo(f.periodo_id),
+            el("span", { class: "puntos-int", "aria-label": `intensidad ${f.intensidad} de 3` }, [1, 2, 3].map((k) => el("i", { class: k <= f.intensidad ? "on" : "" })))); }))
+          : el("p", { class: "sub" }, "Sin factores registrados."),
+        el("h3", { class: "seccion-titulo" }, icono("apoyos"), "Apoyos de Bienestar"),
+        apo.items.length ? el("div", { class: "lista-chips" }, apo.items.map((a) => el("span", { class: "chip " + (CHIPS.estado[a.estado] || "chip-gris") }, `${tipoApoyo(a.tipo_apoyo_id)} · ${nombrePeriodo(a.periodo_id)} · ${a.estado.replace("_", " ")}`)))
+          : el("p", { class: "sub" }, "Todavía no ha recibido apoyos."))),
+    el("p", { class: "ayuda-campo" }, "La ficha reúne en una sola vista la información de cinco tablas del sistema. El estudiante se identifica solo con un código anónimo."));
+  contarValores($("#modal-cuerpo"));
+  if (graficaFicha) graficaFicha.destroy();
+  if (window.Chart && ms.length) {
+    Chart.defaults.font.family = "Montserrat, system-ui, sans-serif"; Chart.defaults.color = cssVar("--gris-2");
+    graficaFicha = new Chart(lienzo, { type: "line", data: { labels: ms.map((m) => nombrePeriodo(m.periodo_id)), datasets: [
+      { label: "Promedio", data: ms.map((m) => m.promedio), borderColor: COLOR.verde, backgroundColor: "rgba(0,123,62,.15)", fill: true, tension: .35, pointRadius: 4, pointBackgroundColor: ms.map((m) => (m.promedio < 3 ? COLOR.rojo : COLOR.verde)) },
+      { label: "Mínimo aprobatorio (3,0)", data: ms.map(() => 3), borderColor: COLOR.oro, borderDash: [5, 4], pointRadius: 0, borderWidth: 2 }] },
+      options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: "bottom", labels: { usePointStyle: true, boxWidth: 8 } } }, scales: { y: { min: 0, max: 5, grid: { color: cssVar("--linea") } }, x: { grid: { display: false } } } } });
+  }
+}
+
+// ------------------------------------------------------------------ laboratorio de escenarios
+const COLORES_ESC = ["#F7931E", "#00A99D", "#007B3E", "#DAAA00", "#79C000"];
+async function vistaLaboratorio(main) {
+  const primero = await api("/api/tablero");
+  const nombres = primero.escenarios;
+  const [series, nivel] = await Promise.all([Promise.all(nombres.map((n) => (n === primero.escenario ? primero : api("/api/tablero?escenario=" + encodeURIComponent(n))))), api("/api/reportes/desercion-nivel")]);
+  const periodos = series[0].serie.map((s) => s.periodo);
+  const horizonte = periodos.filter((p) => p >= "2026-1" && series[0].serie.find((s) => s.periodo === p)?.simulado);
+  const valor = (i, p, k) => series[i].serie.find((s) => s.periodo === p)?.simulado?.[k] ?? null;
+  const prom = (arr) => arr.reduce((a, b) => a + b, 0) / Math.max(1, arr.length);
+  const resumen = nombres.map((n, i) => ({
+    n, color: COLORES_ESC[i % COLORES_ESC.length],
+    des: prom(horizonte.map((p) => valor(i, p, "desercion_periodo"))),
+    mat: valor(i, horizonte[horizonte.length - 1], "matriculados"),
+    gra: horizonte.reduce((a, p) => a + (valor(i, p, "graduados") || 0), 0),
+    cob: prom(horizonte.map((p) => valor(i, p, "cobertura_bienestar") ?? 0)),
+  }));
+  const base = resumen[0], mejor = resumen.reduce((a, b) => (b.des < a.des ? b : a));
+  const delta = (v, ref, inv, txt) => { const d = v - ref; if (Math.abs(d) < 1e-9) return el("span", { class: "sub" }, "referencia"); const bien = inv ? d < 0 : d > 0; return el("span", { class: bien ? "delta-bien" : "delta-mal" }, (d > 0 ? "+" : "−") + txt(Math.abs(d))); };
+  const tarjetas = resumen.map((r) => {
+    const t = el("section", { class: "tarjeta esc-tarjeta" }, r === mejor ? el("span", { class: "cinta" }, icono("trofeo"), "Menor deserción") : null,
+      el("h3", {}, el("i", {}), r.n),
+      el("div", { class: "esc-fila" }, el("span", {}, "Deserción promedio 2026–2030"), el("span", {}, el("b", {}, pct(r.des, 2)), " ", delta(r.des, base.des, true, (x) => fmt(100 * x, 2) + " pts"))),
+      el("div", { class: "esc-fila" }, el("span", {}, `Matriculados en ${horizonte[horizonte.length - 1]}`), el("span", {}, el("b", {}, fmt(r.mat, 0)), " ", delta(r.mat, base.mat, false, (x) => fmt(x, 0) + " est."))),
+      el("div", { class: "esc-fila" }, el("span", {}, "Graduados acumulados"), el("span", {}, el("b", {}, fmt(r.gra, 0)), " ", delta(r.gra, base.gra, false, (x) => fmt(x, 0)))),
+      el("div", { class: "esc-fila" }, el("span", {}, "Cobertura de Bienestar"), el("b", {}, pct(r.cob, 0))));
+    t.style.setProperty("--c", r.color); return t;
+  });
+  // gráfica comparativa
+  const lienzo = el("canvas", { role: "img", "aria-label": "Deserción por periodo en cada escenario" });
+  const conm = el("div", { class: "conmutadores", role: "group", "aria-label": "Escenarios visibles" });
+  // máquina del tiempo
+  const rango = el("input", { type: "range", min: 0, max: horizonte.length - 1, value: horizonte.length - 1, "aria-label": "Semestre proyectado" });
+  const salida = el("output", {}, horizonte[horizonte.length - 1]);
+  const foto = el("div", { class: "esc-rejilla" });
+  const pintarFoto = () => {
+    const p = horizonte[+rango.value]; salida.textContent = p;
+    foto.replaceChildren(...nombres.map((n, i) => { const c = el("section", { class: "tarjeta esc-tarjeta" }, el("h3", {}, el("i", {}), n),
+      el("div", { class: "esc-fila" }, el("span", {}, "Deserción del periodo"), el("b", {}, pct(valor(i, p, "desercion_periodo"), 2))),
+      el("div", { class: "esc-fila" }, el("span", {}, "Matriculados"), el("b", {}, fmt(valor(i, p, "matriculados"), 0))),
+      el("div", { class: "esc-fila" }, el("span", {}, "Alertas tempranas"), el("b", {}, fmt(valor(i, p, "alertas"), 0))),
+      el("div", { class: "esc-fila" }, el("span", {}, "Cobertura de Bienestar"), el("b", {}, pct(valor(i, p, "cobertura_bienestar"), 0))));
+    c.style.setProperty("--c", COLORES_ESC[i % COLORES_ESC.length]); return c; }));
+  };
+  rango.addEventListener("input", pintarFoto);
+  // embudo de cohorte con las tasas por semestre
+  const filas = nivel.filas.filter((f) => f[0] <= 10 && typeof f[4] === "number");
+  let n = 100, nm = 100; const obs = [], mod = [];
+  for (const f of filas) { obs.push(+n.toFixed(1)); mod.push(+nm.toFixed(1)); n *= 1 - f[4] / 100; nm *= 1 - (typeof f[5] === "number" ? f[5] : f[4]) / 100; }
+  const llegan = obs[obs.length - 1], primerAnio = 100 - (obs[2] ?? n);
+  const lienzo2 = el("canvas", { role: "img", "aria-label": "Embudo de permanencia por semestre" });
+  main.replaceChildren(
+    cabecera("laboratorio", "Laboratorio de escenarios", "¿Qué pasaría con la deserción si la universidad aplica cada política? Proyecciones del modelo de simulación hasta 2030."),
+    ayudaVista("laboratorio"),
+    el("div", { class: "esc-rejilla" }, tarjetas),
+    el("section", { class: "tarjeta" }, el("h2", {}, icono("tablero"), "Deserción por periodo: lo real y cada escenario"), conm, el("div", { class: "grafica" }, lienzo),
+      el("p", { class: "sub" }, "La línea gris es lo que pasó de verdad. Desde 2026-1 cada escenario aplica su política; antes de esa fecha todos coinciden.")),
+    el("section", { class: "tarjeta", style: null }, el("h2", {}, icono("reloj"), "Máquina del tiempo"),
+      el("p", { class: "sub" }, "Mueve el control para ver cómo estaría el programa en cada semestre proyectado."),
+      el("div", { class: "maquina" }, el("span", { class: "sub" }, horizonte[0]), rango, el("span", { class: "sub" }, horizonte[horizonte.length - 1]), salida), foto),
+    el("section", { class: "tarjeta" }, el("h2", {}, icono("embudo"), "De cada 100 estudiantes que entran, ¿cuántos siguen en cada semestre?"),
+      el("div", { class: "embudo-dato" }, el("span", { class: "grande" }, fmt(llegan, 0)), el("div", {}, el("b", {}, "llegan a décimo semestre"),
+        el("p", { class: "sub" }, `En el primer año se pierden cerca de ${fmt(primerAnio, 0)} de cada 100: por eso la cola de Bienestar prioriza los primeros semestres.`))),
+      el("div", { class: "grafica" }, lienzo2),
+      el("p", { class: "ayuda-campo" }, "Aproximación encadenando la tasa de deserción observada en cada semestre (reporte «Deserción por semestre»); no descuenta rezagos ni reingresos.")));
+  pintarFoto(); contarValores(main);
+  const opc = { responsive: true, maintainAspectRatio: false, interaction: { mode: "index", intersect: false },
+    plugins: { legend: { display: false }, tooltip: { backgroundColor: COLOR.verdeOsc, padding: 10, cornerRadius: 8 } },
+    scales: { x: { ticks: { maxTicksLimit: 10 }, grid: { display: false } }, y: { grid: { color: cssVar("--linea") }, ticks: { callback: (v) => v + " %" } } } };
+  const gris = cssVar("--gris-2") || "#6b746f";
+  const datasets = [{ label: "Real", data: series[0].serie.map((s) => (s.real ? +(100 * s.real.desercion_periodo).toFixed(2) : null)), borderColor: gris, backgroundColor: gris, pointRadius: 2.5, borderWidth: 2.5, tension: .3 },
+    ...nombres.map((nm2, i) => ({ label: nm2, data: series[i].serie.map((s) => (s.simulado ? +(100 * s.simulado.desercion_periodo).toFixed(2) : null)), borderColor: COLORES_ESC[i % COLORES_ESC.length], borderWidth: 2.5, pointRadius: 0, tension: .3, borderDash: i === 0 ? [6, 4] : [] }))];
+  grafica(lienzo, { type: "line", data: { labels: periodos, datasets }, options: opc });
+  const g = graficas[graficas.length - 1];
+  datasets.forEach((d, i) => {
+    const b = el("button", { type: "button", class: "conmutador", "aria-pressed": "true" }, el("i", {}), d.label);
+    b.style.setProperty("--c", d.borderColor);
+    b.addEventListener("click", () => { const vis = b.getAttribute("aria-pressed") !== "true"; b.setAttribute("aria-pressed", String(vis)); if (g) { g.setDatasetVisibility(i, vis); g.update(); } });
+    conm.append(b);
+  });
+  grafica(lienzo2, { type: "bar", data: { labels: filas.map((f) => "Sem. " + f[0]), datasets: [
+    { type: "bar", label: "Observado en el sistema", data: obs, backgroundColor: obs.map((_, i) => `rgba(0,123,62,${1 - i * 0.06})`), borderRadius: 8 },
+    { type: "line", label: "Modelo calibrado", data: mod, borderColor: COLOR.oro, backgroundColor: COLOR.oro, borderWidth: 2.5, pointRadius: 3, tension: .3 }] },
+    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: "bottom", labels: { usePointStyle: true, boxWidth: 8 } } },
+      scales: { y: { min: 0, max: 100, grid: { color: cssVar("--linea") }, title: { display: true, text: "Estudiantes de cada 100" } }, x: { grid: { display: false } } } } });
+}

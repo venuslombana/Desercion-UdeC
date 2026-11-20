@@ -4,9 +4,11 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="theme-color" content="#00482B">
+  <link rel="icon" type="image/png" href="/static/img/logo-udec.png">
   <title>Permanencia UdeC · Alerta temprana de la deserción</title>
   <link rel="preload" href="/static/fonts/montserrat-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="preload" href="/static/fonts/montserrat-latin-700-normal.woff2" as="font" type="font/woff2" crossorigin>
+  <script src="/static/tema.js"></script>
   <link rel="stylesheet" href="/static/styles.css">
   <script src="/static/chart.umd.min.js" defer></script>
   <script src="/static/app.js" defer></script>
@@ -17,9 +19,11 @@
   <!-- ================= Inicio de sesión ================= -->
   <main id="vista-login" class="login" hidden>
     <section class="login-hero">
+      <span class="burbuja b1"></span><span class="burbuja b2"></span><span class="burbuja b3"></span>
       <div class="logo-caja logo-caja-hero">
-        <img class="logo-udec" src="/static/img/logo-udec.png" alt="Universidad de Cundinamarca" hidden>
-        <span class="logo-texto"><b>UdeC</b><small>Universidad de Cundinamarca</small></span>
+        <img class="logo-udec" src="/static/img/logo-udec.png" alt="Escudo de la Universidad de Cundinamarca" hidden>
+        <span class="logo-texto"><b>UdeC</b></span>
+        <span class="logo-leyenda"><b>Universidad de Cundinamarca</b><small>Seccional Fusagasugá</small></span>
       </div>
       <div class="hero-texto">
         <p class="hero-etiqueta">Seccional Fusagasugá · Ingeniería de Sistemas y Computación</p>
@@ -76,7 +80,9 @@
         <span class="marca-nombre"><b>Permanencia</b><small>Fusagasugá</small></span>
       </a>
       <div class="barra-der">
-        <button class="btn btn-sutil btn-recorrido" id="btn-recorrido" type="button"><span data-icono="ruta"></span><span class="txt">Recorrido guiado</span></button>
+        <button class="buscador" id="btn-paleta" type="button" aria-label="Buscar (Ctrl + K)"><span data-icono="buscar"></span><span class="txt">Buscar estudiante o sección…</span><kbd>Ctrl K</kbd></button>
+        <button class="btn-icono" id="btn-tema" type="button" aria-label="Cambiar a modo oscuro" title="Modo claro / oscuro" data-icono="luna"></button>
+        <button class="btn-icono" id="btn-recorrido" type="button" aria-label="Recorrido guiado" title="Recorrido guiado" data-icono="ruta"></button>
         <div class="usuario">
           <span class="avatar" id="usuario-avatar" aria-hidden="true"></span>
           <span class="usuario-datos"><b id="usuario-nombre"></b><span class="rol" id="usuario-rol"></span></span>

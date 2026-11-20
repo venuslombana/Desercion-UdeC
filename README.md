@@ -121,4 +121,6 @@ Notas del plan gratuito: el servicio se duerme tras 15 min sin tráfico (el prim
 
 La interfaz usa la paleta del Manual de Imagen Institucional de la Universidad de Cundinamarca (verdes #00482B y #007B3E, amarillos #FBE122 y #DAAA00, y los secundarios) y la tipografía institucional Montserrat, servida localmente (licencia SIL OFL en `crud/app/static/fonts`).
 
-Para mostrar el logo oficial, guarde el imagotipo horizontal como `crud/app/static/img/logo-udec.png` (ver `img/LEEME.txt`). Sin ese archivo se muestra un texto de respaldo.
+El escudo de la universidad está en `crud/app/static/img/logo-udec.png` (fondo transparente). Si se quita el archivo, la aplicación muestra un texto de respaldo.
+
+Funciones de la interfaz: inicio guiado por rol, recorrido guiado, ayuda en cada pantalla, buscador universal (Ctrl + K), ficha 360 del estudiante, laboratorio de escenarios con máquina del tiempo y embudo de permanencia, modo oscuro y versión móvil con barra inferior.
