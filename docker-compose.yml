@@ -1,0 +1,43 @@
+# Despliegue completo con un solo comando:  docker compose up --build
+# Abre https://localhost (certificado local emitido por Caddy). Variables en .env (copiar de .env.example).
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-desercion}
+      POSTGRES_USER: ${POSTGRES_USER:-desercion}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Defina POSTGRES_PASSWORD en .env}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      retries: 10
+    restart: unless-stopped
+
+  api:
+    build: ./crud
+    environment:
+      DATABASE_URL: postgresql+psycopg://${POSTGRES_USER:-desercion}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB:-desercion}
+      SECRET_KEY: ${SECRET_KEY:?Defina SECRET_KEY en .env}
+      SEED_ON_START: ${SEED_ON_START:-1}
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: unless-stopped
+
+  proxy:
+    image: caddy:2-alpine
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+    depends_on:
+      - api
+    restart: unless-stopped
+
+volumes:
+  pgdata:
+  caddy_data:

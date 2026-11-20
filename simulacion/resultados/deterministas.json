@@ -1,0 +1,42 @@
+{
+ "E0": {
+  "Desercion cohorte 10": 42.91,
+  "Matriculados": 548.42,
+  "Graduados": 971.68,
+  "Desertores": 1111.89,
+  "Cobertura bienestar": 0.91,
+  "Error conservacion": 0.0
+ },
+ "E1": {
+  "Desercion cohorte 10": 39.5,
+  "Matriculados": 575.98,
+  "Graduados": 1030.27,
+  "Desertores": 1025.74,
+  "Cobertura bienestar": 0.88,
+  "Error conservacion": 0.0
+ },
+ "E2": {
+  "Desercion cohorte 10": 39.03,
+  "Matriculados": 579.8,
+  "Graduados": 1037.6,
+  "Desertores": 1014.6,
+  "Cobertura bienestar": 1.0,
+  "Error conservacion": 0.0
+ },
+ "E3": {
+  "Desercion cohorte 10": 32.11,
+  "Matriculados": 613.85,
+  "Graduados": 1155.41,
+  "Desertores": 862.74,
+  "Cobertura bienestar": 1.0,
+  "Error conservacion": 0.0
+ },
+ "E4": {
+  "Desercion cohorte 10": 34.13,
+  "Matriculados": 747.66,
+  "Graduados": 1404.65,
+  "Desertores": 1137.69,
+  "Cobertura bienestar": 0.6,
+  "Error conservacion": 0.0
+ }
+}

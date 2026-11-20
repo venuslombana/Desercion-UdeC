@@ -1,0 +1,1171 @@
+{UTF-8}
+Alertas nuevas=
+	(Sem 1 + Sem 2) * Prob alerta
+	~	Estudiantes/Semestre
+	~	Alertas tempranas generadas en los semestres 1 y 2.
+	|
+
+Aplica media=
+	1
+	~	Dmnl [0,1,1]
+	~	1 = la política cubre semestres 3-5.
+	|
+
+Aplica tardia=
+	1
+	~	Dmnl [0,1,1]
+	~	1 = la política cubre semestres 6-10.
+	|
+
+Aplica temprana=
+	1
+	~	Dmnl [0,1,1]
+	~	1 = la política cubre semestres 1-2.
+	|
+
+Avance 1=
+	Sem 1 / TIME STEP - Desercion 1
+	~	Estudiantes/Semestre
+	~	Estudiantes que pasan del semestre 1 al 2. Requiere TIME STEP = 1 semestre.
+	|
+
+Avance 10=
+	Sem 10 / TIME STEP - Desercion 10
+	~	Estudiantes/Semestre
+	~	Estudiantes que terminan el semestre 10.
+	|
+
+Avance 2=
+	Sem 2 / TIME STEP - Desercion 2
+	~	Estudiantes/Semestre
+	~	Estudiantes que pasan del semestre 2 al 3. Requiere TIME STEP = 1 semestre.
+	|
+
+Avance 3=
+	Sem 3 / TIME STEP - Desercion 3
+	~	Estudiantes/Semestre
+	~	Estudiantes que pasan del semestre 3 al 4. Requiere TIME STEP = 1 semestre.
+	|
+
+Avance 4=
+	Sem 4 / TIME STEP - Desercion 4
+	~	Estudiantes/Semestre
+	~	Estudiantes que pasan del semestre 4 al 5. Requiere TIME STEP = 1 semestre.
+	|
+
+Avance 5=
+	Sem 5 / TIME STEP - Desercion 5
+	~	Estudiantes/Semestre
+	~	Estudiantes que pasan del semestre 5 al 6. Requiere TIME STEP = 1 semestre.
+	|
+
+Avance 6=
+	Sem 6 / TIME STEP - Desercion 6
+	~	Estudiantes/Semestre
+	~	Estudiantes que pasan del semestre 6 al 7. Requiere TIME STEP = 1 semestre.
+	|
+
+Avance 7=
+	Sem 7 / TIME STEP - Desercion 7
+	~	Estudiantes/Semestre
+	~	Estudiantes que pasan del semestre 7 al 8. Requiere TIME STEP = 1 semestre.
+	|
+
+Avance 8=
+	Sem 8 / TIME STEP - Desercion 8
+	~	Estudiantes/Semestre
+	~	Estudiantes que pasan del semestre 8 al 9. Requiere TIME STEP = 1 semestre.
+	|
+
+Avance 9=
+	Sem 9 / TIME STEP - Desercion 9
+	~	Estudiantes/Semestre
+	~	Estudiantes que pasan del semestre 9 al 10. Requiere TIME STEP = 1 semestre.
+	|
+
+Calibracion=
+	0.715
+	~	Dmnl [0.3,1.5,0.005]
+	~	Mínimos cuadrados ponderados de las tasas observadas en el CRUD frente al perfil SPADIES.
+	|
+
+Capacidad bienestar=
+	21.5
+	~	Estudiantes/Semestre [0,80,0.5]
+	~	Casos que Bienestar atiende por semestre (CRUD: 21,6 apoyos por periodo).
+	|
+
+Casos atendidos=
+	MIN(Casos pendientes / TIME STEP, Capacidad bienestar)
+	~	Estudiantes/Semestre
+	~	Casos que Bienestar alcanza a atender (recurso limitado).
+	|
+
+Casos pendientes= INTEG (
+	Alertas nuevas - Casos atendidos - Casos vencidos,
+		0)
+	~	Estudiantes
+	~	Cola de casos con alerta temprana que esperan atención de Bienestar.
+	|
+
+Casos vencidos=
+	(Casos pendientes / TIME STEP - Casos atendidos) * Fraccion abandono cola
+	~	Estudiantes/Semestre
+	~	Casos no atendidos que salen de la cola.
+	|
+
+Cobertura bienestar=
+	MIN(1, XIDZ(Casos atendidos, Casos pendientes / TIME STEP, 1))
+	~	Dmnl
+	~	Fracción de la cola que recibe atención en el semestre.
+	|
+
+CV desercion=
+	0.236
+	~	Dmnl [0,0.5,0.01]
+	~	Coeficiente de variación de las tasas entre periodos.
+	|
+
+Desercion 1=
+	Sem 1 * Tasa 1
+	~	Estudiantes/Semestre
+	~	Estudiantes que abandonan en el semestre 1.
+	|
+
+Desercion 10=
+	Sem 10 * Tasa 10
+	~	Estudiantes/Semestre
+	~	Estudiantes que abandonan en el semestre 10.
+	|
+
+Desercion 2=
+	Sem 2 * Tasa 2
+	~	Estudiantes/Semestre
+	~	Estudiantes que abandonan en el semestre 2.
+	|
+
+Desercion 3=
+	Sem 3 * Tasa 3
+	~	Estudiantes/Semestre
+	~	Estudiantes que abandonan en el semestre 3.
+	|
+
+Desercion 4=
+	Sem 4 * Tasa 4
+	~	Estudiantes/Semestre
+	~	Estudiantes que abandonan en el semestre 4.
+	|
+
+Desercion 5=
+	Sem 5 * Tasa 5
+	~	Estudiantes/Semestre
+	~	Estudiantes que abandonan en el semestre 5.
+	|
+
+Desercion 6=
+	Sem 6 * Tasa 6
+	~	Estudiantes/Semestre
+	~	Estudiantes que abandonan en el semestre 6.
+	|
+
+Desercion 7=
+	Sem 7 * Tasa 7
+	~	Estudiantes/Semestre
+	~	Estudiantes que abandonan en el semestre 7.
+	|
+
+Desercion 8=
+	Sem 8 * Tasa 8
+	~	Estudiantes/Semestre
+	~	Estudiantes que abandonan en el semestre 8.
+	|
+
+Desercion 9=
+	Sem 9 * Tasa 9
+	~	Estudiantes/Semestre
+	~	Estudiantes que abandonan en el semestre 9.
+	|
+
+Desercion cohorte 10=
+	100 * (1 - Retencion 10)
+	~	Dmnl
+	~	Deserción acumulada de cohorte a 10 semestres, en porcentaje.
+	|
+
+Desercion periodo=
+	ZIDZ(Desercion total * TIME STEP, Matriculados)
+	~	Dmnl
+	~	Tasa de deserción por periodo (indicador SPADIES).
+	|
+
+Desercion rezago=
+	Rezago * Tasa des rezago
+	~	Estudiantes/Semestre
+	~	
+	|
+
+Desercion total=
+	Desercion 1 + Desercion 2 + Desercion 3 + Desercion 4 + Desercion 5 + Desercion 6 + Desercion 7 + Desercion 8 + Desercion 9 + Desercion 10 + Desercion rezago
+	~	Estudiantes/Semestre
+	~	Todas las salidas por deserción del semestre.
+	|
+
+Desertores= INTEG (
+	Desercion total,
+		0)
+	~	Estudiantes
+	~	Contador de desertores acumulados.
+	|
+
+Ef academico=
+	0
+	~	Dmnl [0,1,0.05]
+	~	Efectividad de la palanca académica (monitorías).
+	|
+
+Ef adaptacion=
+	0
+	~	Dmnl [0,1,0.05]
+	~	Efectividad de la palanca de adaptación (psicoorientación).
+	|
+
+Ef economico=
+	0
+	~	Dmnl [0,1,0.05]
+	~	Efectividad de la palanca económica (becas, exoneraciones).
+	|
+
+Eficiencia titulacion=
+	0.66
+	~	Dmnl [0.3,1,0.01]
+	~	Fracción que se gradúa al terminar el semestre 10 (CRUD: 0,664).
+	|
+
+Error conservacion=
+	Ingresados acum - (Matriculados + Graduados + Desertores)
+	~	Estudiantes
+	~	Debe valer 0 en todo instante.
+	|
+
+Factor demanda=
+	1
+	~	Dmnl [0.5,1.5,0.05]
+	~	1 = demanda actual; 1,25 = escenario de aumento de demanda.
+	|
+
+Fraccion abandono cola=
+	0.5
+	~	Dmnl [0,1,0.05]
+	~	Supuesto: la mitad de los casos no atendidos sale de la cola cada semestre.
+	|
+
+Graduacion oportuna=
+	Avance 10 * Eficiencia titulacion
+	~	Estudiantes/Semestre
+	~	
+	|
+
+Graduacion oportuna pct=
+	100 * Retencion 10 * Eficiencia titulacion
+	~	Dmnl
+	~	Graduación oportuna de cohorte, en porcentaje.
+	|
+
+Graduacion rezago=
+	Rezago * Tasa grad rezago
+	~	Estudiantes/Semestre
+	~	
+	|
+
+Graduados= INTEG (
+	Graduacion oportuna + Graduacion rezago,
+		0)
+	~	Estudiantes
+	~	Graduados acumulados.
+	|
+
+Graduados periodo=
+	Graduacion oportuna + Graduacion rezago
+	~	Estudiantes/Semestre
+	~	
+	|
+
+Ingresados acum= INTEG (
+	Ingreso,
+		0)
+	~	Estudiantes
+	~	Contador de ingresos; se usa para verificar la conservación.
+	|
+
+Ingreso=
+	IF THEN ELSE(Modo estocastico = 1, RANDOM NORMAL(Ingreso minimo, Ingreso maximo, Ingreso media, Ingreso de, Semilla), Ingreso media) * Factor demanda
+	~	Estudiantes/Semestre
+	~	Llegadas por semestre: Normal(65,8; 6,5) truncada en [50, 80], ajustada con las 21 cohortes exportadas del CRUD.
+	|
+
+Ingreso de=
+	6.5
+	~	Estudiantes/Semestre [0,15,0.1]
+	~	Desviación estándar ajustada con el CRUD.
+	|
+
+Ingreso maximo=
+	80
+	~	Estudiantes/Semestre
+	~	Truncamiento superior.
+	|
+
+Ingreso media=
+	65.8
+	~	Estudiantes/Semestre [50,80,0.1]
+	~	Media ajustada con el CRUD.
+	|
+
+Ingreso minimo=
+	50
+	~	Estudiantes/Semestre
+	~	Truncamiento inferior.
+	|
+
+Inicio politica=
+	0
+	~	Semestre [0,40,1]
+	~	Semestre en que empiezan las políticas (0 = desde el inicio).
+	|
+
+Matriculados=
+	Sem 1 + Sem 2 + Sem 3 + Sem 4 + Sem 5 + Sem 6 + Sem 7 + Sem 8 + Sem 9 + Sem 10 + Rezago
+	~	Estudiantes
+	~	
+	|
+
+Max reduccion=
+	0.5
+	~	Dmnl [0,1,0.05]
+	~	Supuesto: reducción máxima de una tasa con política 100 % efectiva.
+	|
+
+Modo estocastico=
+	1
+	~	Dmnl [0,1,1]
+	~	1 = llegadas y tasas aleatorias; 0 = corrida determinista.
+	|
+
+Multiplicador comun=
+	Calibracion * Ruido desercion
+	~	Dmnl
+	~	Calibración institucional por choque aleatorio del periodo.
+	|
+
+Paso a rezago=
+	Avance 10 * (1 - Eficiencia titulacion)
+	~	Estudiantes/Semestre
+	~	
+	|
+
+Peso aca media=
+	0.5
+	~	Dmnl
+	~	Supuesto de trabajo.
+	|
+
+Peso aca tardia=
+	0.4
+	~	Dmnl
+	~	Supuesto de trabajo.
+	|
+
+Peso aca temprana=
+	0.3
+	~	Dmnl
+	~	Supuesto de trabajo.
+	|
+
+Peso ada media=
+	0.2
+	~	Dmnl
+	~	Supuesto de trabajo.
+	|
+
+Peso ada tardia=
+	0.2
+	~	Dmnl
+	~	Supuesto de trabajo.
+	|
+
+Peso ada temprana=
+	0.4
+	~	Dmnl
+	~	Supuesto de trabajo.
+	|
+
+Peso eco media=
+	0.3
+	~	Dmnl
+	~	Supuesto de trabajo.
+	|
+
+Peso eco tardia=
+	0.4
+	~	Dmnl
+	~	Supuesto de trabajo.
+	|
+
+Peso eco temprana=
+	0.3
+	~	Dmnl
+	~	Supuesto de trabajo.
+	|
+
+Politica activa=
+	IF THEN ELSE(Time >= Inicio politica, 1, 0)
+	~	Dmnl
+	~	Vale 1 desde el semestre en que arrancan las políticas.
+	|
+
+Prob alerta=
+	0.185
+	~	1/Semestre
+	~	Alertas por estudiante de semestres 1-2 en cada periodo (CRUD: 0,185).
+	|
+
+Reduccion media=
+	Politica activa * Aplica media * Max reduccion * (Peso eco media * Ef economico + Peso aca media * Ef academico + Peso ada media * Ef adaptacion)
+	~	Dmnl
+	~	Reducción en semestres 3-5.
+	|
+
+Reduccion tardia=
+	Politica activa * Aplica tardia * Max reduccion * (Peso eco tardia * Ef economico + Peso aca tardia * Ef academico + Peso ada tardia * Ef adaptacion)
+	~	Dmnl
+	~	Reducción en semestres 6-10.
+	|
+
+Reduccion temprana=
+	Politica activa * Aplica temprana * Max reduccion * Cobertura bienestar * (Peso eco temprana * Ef economico + Peso aca temprana * Ef academico + Peso ada temprana * Ef adaptacion)
+	~	Dmnl
+	~	Reducción de la tasa en semestres 1-2. Se multiplica por la cobertura porque la ruta de apoyo empieza con la alerta temprana.
+	|
+
+Retencion 10=
+	(1 - Tasa 1 * TIME STEP) * (1 - Tasa 2 * TIME STEP) * (1 - Tasa 3 * TIME STEP) * (1 - Tasa 4 * TIME STEP) * (1 - Tasa 5 * TIME STEP) * (1 - Tasa 6 * TIME STEP) * (1 - Tasa 7 * TIME STEP) * (1 - Tasa 8 * TIME STEP) * (1 - Tasa 9 * TIME STEP) * (1 - Tasa 10 * TIME STEP)
+	~	Dmnl
+	~	Fracción de una cohorte que termina el semestre 10 con las tasas vigentes.
+	|
+
+Rezago= INTEG (
+	Paso a rezago - Graduacion rezago - Desercion rezago,
+		0)
+	~	Estudiantes
+	~	Estudiantes que terminaron el semestre 10 sin graduarse.
+	|
+
+Ruido desercion=
+	IF THEN ELSE(Modo estocastico = 1, RANDOM NORMAL(0.4, 1.6, 1, CV desercion, Semilla + 1), 1)
+	~	Dmnl
+	~	Variación de las tasas entre periodos. CV = 0,236, estimado con la deserción de primer semestre de 21 cohortes del CRUD.
+	|
+
+Sem 1= INTEG (
+	Ingreso - Avance 1 - Desercion 1,
+		0)
+	~	Estudiantes
+	~	Estudiantes matriculados en primer semestre.
+	|
+
+Sem 10= INTEG (
+	Avance 9 - Graduacion oportuna - Paso a rezago - Desercion 10,
+		0)
+	~	Estudiantes
+	~	Estudiantes en el semestre 10 (9 del plan más uno de margen).
+	|
+
+Sem 2= INTEG (
+	Avance 1 - Avance 2 - Desercion 2,
+		0)
+	~	Estudiantes
+	~	Estudiantes matriculados en el semestre 2.
+	|
+
+Sem 3= INTEG (
+	Avance 2 - Avance 3 - Desercion 3,
+		0)
+	~	Estudiantes
+	~	Estudiantes matriculados en el semestre 3.
+	|
+
+Sem 4= INTEG (
+	Avance 3 - Avance 4 - Desercion 4,
+		0)
+	~	Estudiantes
+	~	Estudiantes matriculados en el semestre 4.
+	|
+
+Sem 5= INTEG (
+	Avance 4 - Avance 5 - Desercion 5,
+		0)
+	~	Estudiantes
+	~	Estudiantes matriculados en el semestre 5.
+	|
+
+Sem 6= INTEG (
+	Avance 5 - Avance 6 - Desercion 6,
+		0)
+	~	Estudiantes
+	~	Estudiantes matriculados en el semestre 6.
+	|
+
+Sem 7= INTEG (
+	Avance 6 - Avance 7 - Desercion 7,
+		0)
+	~	Estudiantes
+	~	Estudiantes matriculados en el semestre 7.
+	|
+
+Sem 8= INTEG (
+	Avance 7 - Avance 8 - Desercion 8,
+		0)
+	~	Estudiantes
+	~	Estudiantes matriculados en el semestre 8.
+	|
+
+Sem 9= INTEG (
+	Avance 8 - Avance 9 - Desercion 9,
+		0)
+	~	Estudiantes
+	~	Estudiantes matriculados en el semestre 9.
+	|
+
+Semilla=
+	1
+	~	Dmnl [1,100,1]
+	~	Semilla de números aleatorios. Se cambia en cada réplica (1 a 10).
+	|
+
+Tasa 1=
+	Tasa base 1 * Multiplicador comun * (1 - Reduccion temprana)
+	~	1/Semestre
+	~	Tasa de deserción por periodo del semestre 1.
+	|
+
+Tasa 10=
+	Tasa base 10 * Multiplicador comun * (1 - Reduccion tardia)
+	~	1/Semestre
+	~	Tasa de deserción por periodo del semestre 10.
+	|
+
+Tasa 2=
+	Tasa base 2 * Multiplicador comun * (1 - Reduccion temprana)
+	~	1/Semestre
+	~	Tasa de deserción por periodo del semestre 2.
+	|
+
+Tasa 3=
+	Tasa base 3 * Multiplicador comun * (1 - Reduccion media)
+	~	1/Semestre
+	~	Tasa de deserción por periodo del semestre 3.
+	|
+
+Tasa 4=
+	Tasa base 4 * Multiplicador comun * (1 - Reduccion media)
+	~	1/Semestre
+	~	Tasa de deserción por periodo del semestre 4.
+	|
+
+Tasa 5=
+	Tasa base 5 * Multiplicador comun * (1 - Reduccion media)
+	~	1/Semestre
+	~	Tasa de deserción por periodo del semestre 5.
+	|
+
+Tasa 6=
+	Tasa base 6 * Multiplicador comun * (1 - Reduccion tardia)
+	~	1/Semestre
+	~	Tasa de deserción por periodo del semestre 6.
+	|
+
+Tasa 7=
+	Tasa base 7 * Multiplicador comun * (1 - Reduccion tardia)
+	~	1/Semestre
+	~	Tasa de deserción por periodo del semestre 7.
+	|
+
+Tasa 8=
+	Tasa base 8 * Multiplicador comun * (1 - Reduccion tardia)
+	~	1/Semestre
+	~	Tasa de deserción por periodo del semestre 8.
+	|
+
+Tasa 9=
+	Tasa base 9 * Multiplicador comun * (1 - Reduccion tardia)
+	~	1/Semestre
+	~	Tasa de deserción por periodo del semestre 9.
+	|
+
+Tasa base 1=
+	0.204
+	~	1/Semestre
+	~	Tasa por periodo del perfil SPADIES, semestre 1.
+	|
+
+Tasa base 10=
+	0.024
+	~	1/Semestre
+	~	Tasa por periodo del perfil SPADIES, semestre 10.
+	|
+
+Tasa base 2=
+	0.117
+	~	1/Semestre
+	~	Tasa por periodo del perfil SPADIES, semestre 2.
+	|
+
+Tasa base 3=
+	0.087
+	~	1/Semestre
+	~	Tasa por periodo del perfil SPADIES, semestre 3.
+	|
+
+Tasa base 4=
+	0.076
+	~	1/Semestre
+	~	Tasa por periodo del perfil SPADIES, semestre 4.
+	|
+
+Tasa base 5=
+	0.074
+	~	1/Semestre
+	~	Tasa por periodo del perfil SPADIES, semestre 5.
+	|
+
+Tasa base 6=
+	0.06
+	~	1/Semestre
+	~	Tasa por periodo del perfil SPADIES, semestre 6.
+	|
+
+Tasa base 7=
+	0.054
+	~	1/Semestre
+	~	Tasa por periodo del perfil SPADIES, semestre 7.
+	|
+
+Tasa base 8=
+	0.033
+	~	1/Semestre
+	~	Tasa por periodo del perfil SPADIES, semestre 8.
+	|
+
+Tasa base 9=
+	0.023
+	~	1/Semestre
+	~	Tasa por periodo del perfil SPADIES, semestre 9.
+	|
+
+Tasa des rezago=
+	0.04
+	~	1/Semestre
+	~	CRUD: 0,039.
+	|
+
+Tasa grad rezago=
+	0.12
+	~	1/Semestre
+	~	CRUD: 0,119.
+	|
+
+********************************************************
+	.Control
+********************************************************~
+		Simulation Control Parameters
+	|
+
+FINAL TIME  = 40
+	~	Semestre
+	~	Final de la simulación (20 años).
+	|
+
+INITIAL TIME  = 0
+	~	Semestre
+	~	Inicio de la simulación.
+	|
+
+SAVEPER  = 
+        TIME STEP
+	~	Semestre [0,?]
+	~	Frecuencia de guardado.
+	|
+
+TIME STEP  = 1
+	~	Semestre [0,?]
+	~	Paso de integración: un semestre. No cambiar: el avance entre semestres lo supone.
+	|
+
+\\\---/// Sketch information - do not modify anything except names
+V300  Do not put anything below this section - it will be ignored
+*1 Flujo de estudiantes
+$192-192-192,0,Times New Roman|12||0-0-0|0-0-0|0-0-255|-1--1--1|-1--1--1|96,96,75,0
+10,1,Sem 1,500,260,40,20,3,3,0,0,0,0,0,0
+10,2,Sem 6,1540,480,40,20,3,3,0,0,0,0,0,0
+10,3,Sem 2,760,260,40,20,3,3,0,0,0,0,0,0
+10,4,Sem 7,1280,480,40,20,3,3,0,0,0,0,0,0
+10,5,Sem 3,1020,260,40,20,3,3,0,0,0,0,0,0
+10,6,Sem 8,1020,480,40,20,3,3,0,0,0,0,0,0
+10,7,Sem 4,1280,260,40,20,3,3,0,0,0,0,0,0
+10,8,Sem 9,760,480,40,20,3,3,0,0,0,0,0,0
+10,9,Sem 5,1540,260,40,20,3,3,0,0,0,0,0,0
+10,10,Sem 10,500,480,40,20,3,3,0,0,0,0,0,0
+10,11,Graduados,240,480,40,20,3,3,0,0,0,0,0,0
+10,12,Rezago,500,720,40,20,3,3,0,0,0,0,0,0
+10,13,Avance 10,430,545,45,11,8,3,0,0,0,0,0,0
+10,14,Tasa 1,570,160,30,11,8,3,0,0,0,0,0,0
+10,15,Tasa base 1,570,105,55,11,8,3,0,0,0,0,0,0
+10,16,Tasa 2,830,160,30,11,8,3,0,0,0,0,0,0
+10,17,Tasa base 2,830,105,55,11,8,3,0,0,0,0,0,0
+10,18,Tasa 3,1090,160,30,11,8,3,0,0,0,0,0,0
+10,19,Tasa base 3,1090,105,55,11,8,3,0,0,0,0,0,0
+10,20,Tasa 4,1350,160,30,11,8,3,0,0,0,0,0,0
+10,21,Tasa base 4,1350,105,55,11,8,3,0,0,0,0,0,0
+10,22,Tasa 5,1610,160,30,11,8,3,0,0,0,0,0,0
+10,23,Tasa base 5,1610,105,55,11,8,3,0,0,0,0,0,0
+10,24,Tasa 6,1610,590,30,11,8,3,0,0,0,0,0,0
+10,25,Tasa base 6,1610,650,55,11,8,3,0,0,0,0,0,0
+10,26,Tasa 7,1350,590,30,11,8,3,0,0,0,0,0,0
+10,27,Tasa base 7,1350,650,55,11,8,3,0,0,0,0,0,0
+10,28,Tasa 8,1090,590,30,11,8,3,0,0,0,0,0,0
+10,29,Tasa base 8,1090,650,55,11,8,3,0,0,0,0,0,0
+10,30,Tasa 9,830,590,30,11,8,3,0,0,0,0,0,0
+10,31,Tasa base 9,830,650,55,11,8,3,0,0,0,0,0,0
+10,32,Tasa 10,590,375,35,11,8,3,0,0,0,0,0,0
+10,33,Tasa base 10,565,330,60,11,8,3,0,0,0,0,0,0
+10,34,Ingreso media,250,180,65,11,8,3,0,0,0,0,0,0
+10,35,Ingreso de,330,150,50,11,8,3,0,0,0,0,0,0
+10,36,Ingreso minimo,180,215,70,11,8,3,0,0,0,0,0,0
+10,37,Ingreso maximo,210,320,70,11,8,3,0,0,0,0,0,0
+10,38,Factor demanda,330,340,70,11,8,3,0,0,0,0,0,0
+10,39,Semilla,100,90,35,11,8,3,0,0,0,0,0,0
+10,40,Modo estocastico,110,140,80,11,8,3,0,0,0,0,0,0
+10,41,CV desercion,110,40,60,11,8,3,0,0,0,0,0,0
+10,42,Ruido desercion,260,40,75,11,8,3,0,0,0,0,0,0
+10,43,Calibracion,400,95,55,11,8,3,0,0,0,0,0,0
+10,44,Multiplicador comun,700,40,95,11,8,3,0,0,0,0,0,0
+10,45,Eficiencia titulacion,260,400,105,11,8,3,0,0,0,0,0,0
+10,46,Tasa grad rezago,250,700,80,11,8,3,0,0,0,0,0,0
+10,47,Tasa des rezago,720,760,75,11,8,3,0,0,0,0,0,0
+12,48,48,250,260,10,8,0,3,0,0,-1,0,0,0
+1,49,51,1,4,0,0,22,0,0,0,-1--1--1,,1|(500,260)|
+1,50,51,48,100,0,0,22,0,0,0,-1--1--1,,1|(250,260)|
+11,51,48,370,260,6,8,34,3,0,0,1,0,0,0
+10,52,Ingreso,370,278,35,11,40,3,0,0,-1,0,0,0
+1,53,55,3,4,0,0,22,0,0,0,-1--1--1,,1|(760,260)|
+1,54,55,1,100,0,0,22,0,0,0,-1--1--1,,1|(500,260)|
+11,55,48,630,260,6,8,34,3,0,0,1,0,0,0
+10,56,Avance 1,630,278,40,11,40,3,0,0,-1,0,0,0
+1,57,59,5,4,0,0,22,0,0,0,-1--1--1,,1|(1020,260)|
+1,58,59,3,100,0,0,22,0,0,0,-1--1--1,,1|(760,260)|
+11,59,48,890,260,6,8,34,3,0,0,1,0,0,0
+10,60,Avance 2,890,278,40,11,40,3,0,0,-1,0,0,0
+1,61,63,7,4,0,0,22,0,0,0,-1--1--1,,1|(1280,260)|
+1,62,63,5,100,0,0,22,0,0,0,-1--1--1,,1|(1020,260)|
+11,63,48,1150,260,6,8,34,3,0,0,1,0,0,0
+10,64,Avance 3,1150,278,40,11,40,3,0,0,-1,0,0,0
+1,65,67,9,4,0,0,22,0,0,0,-1--1--1,,1|(1540,260)|
+1,66,67,7,100,0,0,22,0,0,0,-1--1--1,,1|(1280,260)|
+11,67,48,1410,260,6,8,34,3,0,0,1,0,0,0
+10,68,Avance 4,1410,278,40,11,40,3,0,0,-1,0,0,0
+1,69,71,2,4,0,0,22,0,0,0,-1--1--1,,1|(1540,480)|
+1,70,71,9,100,0,0,22,0,0,0,-1--1--1,,1|(1540,260)|
+11,71,48,1540,370,6,8,34,3,0,0,1,0,0,0
+10,72,Avance 5,1590,370,40,11,40,3,0,0,-1,0,0,0
+1,73,75,4,4,0,0,22,0,0,0,-1--1--1,,1|(1280,480)|
+1,74,75,2,100,0,0,22,0,0,0,-1--1--1,,1|(1540,480)|
+11,75,48,1410,480,6,8,34,3,0,0,1,0,0,0
+10,76,Avance 6,1410,498,40,11,40,3,0,0,-1,0,0,0
+1,77,79,6,4,0,0,22,0,0,0,-1--1--1,,1|(1020,480)|
+1,78,79,4,100,0,0,22,0,0,0,-1--1--1,,1|(1280,480)|
+11,79,48,1150,480,6,8,34,3,0,0,1,0,0,0
+10,80,Avance 7,1150,498,40,11,40,3,0,0,-1,0,0,0
+1,81,83,8,4,0,0,22,0,0,0,-1--1--1,,1|(760,480)|
+1,82,83,6,100,0,0,22,0,0,0,-1--1--1,,1|(1020,480)|
+11,83,48,890,480,6,8,34,3,0,0,1,0,0,0
+10,84,Avance 8,890,498,40,11,40,3,0,0,-1,0,0,0
+1,85,87,10,4,0,0,22,0,0,0,-1--1--1,,1|(500,480)|
+1,86,87,8,100,0,0,22,0,0,0,-1--1--1,,1|(760,480)|
+11,87,48,630,480,6,8,34,3,0,0,1,0,0,0
+10,88,Avance 9,630,498,40,11,40,3,0,0,-1,0,0,0
+12,89,48,500,125,10,8,0,3,0,0,-1,0,0,0
+1,90,92,89,4,0,0,22,0,0,0,-1--1--1,,1|(500,125)|
+1,91,92,1,100,0,0,22,0,0,0,-1--1--1,,1|(500,260)|
+11,92,48,500,190,6,8,34,3,0,0,1,0,0,0
+10,93,Desercion 1,550,190,55,11,40,3,0,0,-1,0,0,0
+12,94,48,760,125,10,8,0,3,0,0,-1,0,0,0
+1,95,97,94,4,0,0,22,0,0,0,-1--1--1,,1|(760,125)|
+1,96,97,3,100,0,0,22,0,0,0,-1--1--1,,1|(760,260)|
+11,97,48,760,190,6,8,34,3,0,0,1,0,0,0
+10,98,Desercion 2,810,190,55,11,40,3,0,0,-1,0,0,0
+12,99,48,1020,125,10,8,0,3,0,0,-1,0,0,0
+1,100,102,99,4,0,0,22,0,0,0,-1--1--1,,1|(1020,125)|
+1,101,102,5,100,0,0,22,0,0,0,-1--1--1,,1|(1020,260)|
+11,102,48,1020,190,6,8,34,3,0,0,1,0,0,0
+10,103,Desercion 3,1070,190,55,11,40,3,0,0,-1,0,0,0
+12,104,48,1280,125,10,8,0,3,0,0,-1,0,0,0
+1,105,107,104,4,0,0,22,0,0,0,-1--1--1,,1|(1280,125)|
+1,106,107,7,100,0,0,22,0,0,0,-1--1--1,,1|(1280,260)|
+11,107,48,1280,190,6,8,34,3,0,0,1,0,0,0
+10,108,Desercion 4,1330,190,55,11,40,3,0,0,-1,0,0,0
+12,109,48,1540,125,10,8,0,3,0,0,-1,0,0,0
+1,110,112,109,4,0,0,22,0,0,0,-1--1--1,,1|(1540,125)|
+1,111,112,9,100,0,0,22,0,0,0,-1--1--1,,1|(1540,260)|
+11,112,48,1540,190,6,8,34,3,0,0,1,0,0,0
+10,113,Desercion 5,1590,190,55,11,40,3,0,0,-1,0,0,0
+12,114,48,1540,615,10,8,0,3,0,0,-1,0,0,0
+1,115,117,114,4,0,0,22,0,0,0,-1--1--1,,1|(1540,615)|
+1,116,117,2,100,0,0,22,0,0,0,-1--1--1,,1|(1540,480)|
+11,117,48,1540,550,6,8,34,3,0,0,1,0,0,0
+10,118,Desercion 6,1590,550,55,11,40,3,0,0,-1,0,0,0
+12,119,48,1280,615,10,8,0,3,0,0,-1,0,0,0
+1,120,122,119,4,0,0,22,0,0,0,-1--1--1,,1|(1280,615)|
+1,121,122,4,100,0,0,22,0,0,0,-1--1--1,,1|(1280,480)|
+11,122,48,1280,550,6,8,34,3,0,0,1,0,0,0
+10,123,Desercion 7,1330,550,55,11,40,3,0,0,-1,0,0,0
+12,124,48,1020,615,10,8,0,3,0,0,-1,0,0,0
+1,125,127,124,4,0,0,22,0,0,0,-1--1--1,,1|(1020,615)|
+1,126,127,6,100,0,0,22,0,0,0,-1--1--1,,1|(1020,480)|
+11,127,48,1020,550,6,8,34,3,0,0,1,0,0,0
+10,128,Desercion 8,1070,550,55,11,40,3,0,0,-1,0,0,0
+12,129,48,760,615,10,8,0,3,0,0,-1,0,0,0
+1,130,132,129,4,0,0,22,0,0,0,-1--1--1,,1|(760,615)|
+1,131,132,8,100,0,0,22,0,0,0,-1--1--1,,1|(760,480)|
+11,132,48,760,550,6,8,34,3,0,0,1,0,0,0
+10,133,Desercion 9,810,550,55,11,40,3,0,0,-1,0,0,0
+12,134,48,500,360,10,8,0,3,0,0,-1,0,0,0
+1,135,137,134,4,0,0,22,0,0,0,-1--1--1,,1|(500,360)|
+1,136,137,10,100,0,0,22,0,0,0,-1--1--1,,1|(500,480)|
+11,137,48,500,410,6,8,34,3,0,0,1,0,0,0
+10,138,Desercion 10,550,410,60,11,40,3,0,0,-1,0,0,0
+1,139,141,11,4,0,0,22,0,0,0,-1--1--1,,1|(240,480)|
+1,140,141,10,100,0,0,22,0,0,0,-1--1--1,,1|(500,480)|
+11,141,48,370,480,6,8,34,3,0,0,1,0,0,0
+10,142,Graduacion oportuna,370,498,95,11,40,3,0,0,-1,0,0,0
+1,143,145,12,4,0,0,22,0,0,0,-1--1--1,,1|(500,720)|
+1,144,145,10,100,0,0,22,0,0,0,-1--1--1,,1|(500,480)|
+11,145,48,500,600,6,8,34,3,0,0,1,0,0,0
+10,146,Paso a rezago,550,600,65,11,40,3,0,0,-1,0,0,0
+1,147,149,11,4,0,0,22,0,0,0,-1--1--1,,1|(240,480)|
+1,148,149,12,100,0,0,22,0,0,0,-1--1--1,,1|(500,720)|
+11,149,48,370,600,6,8,34,3,0,0,1,0,0,0
+10,150,Graduacion rezago,370,618,85,11,40,3,0,0,-1,0,0,0
+12,151,48,500,870,10,8,0,3,0,0,-1,0,0,0
+1,152,154,151,4,0,0,22,0,0,0,-1--1--1,,1|(500,870)|
+1,153,154,12,100,0,0,22,0,0,0,-1--1--1,,1|(500,720)|
+11,154,48,500,800,6,8,34,3,0,0,1,0,0,0
+10,155,Desercion rezago,550,800,80,11,40,3,0,0,-1,0,0,0
+10,156,Multiplicador comun,665,130,95,11,8,2,0,3,-1,0,0,0,128-128-128,0-0-0,|12||128-128-128
+10,157,Multiplicador comun,925,130,95,11,8,2,0,3,-1,0,0,0,128-128-128,0-0-0,|12||128-128-128
+10,158,Multiplicador comun,1185,130,95,11,8,2,0,3,-1,0,0,0,128-128-128,0-0-0,|12||128-128-128
+10,159,Multiplicador comun,1445,130,95,11,8,2,0,3,-1,0,0,0,128-128-128,0-0-0,|12||128-128-128
+10,160,Multiplicador comun,1705,130,95,11,8,2,0,3,-1,0,0,0,128-128-128,0-0-0,|12||128-128-128
+10,161,Multiplicador comun,925,570,95,11,8,2,0,3,-1,0,0,0,128-128-128,0-0-0,|12||128-128-128
+10,162,Multiplicador comun,1185,570,95,11,8,2,0,3,-1,0,0,0,128-128-128,0-0-0,|12||128-128-128
+10,163,Multiplicador comun,1445,570,95,11,8,2,0,3,-1,0,0,0,128-128-128,0-0-0,|12||128-128-128
+10,164,Multiplicador comun,1705,570,95,11,8,2,0,3,-1,0,0,0,128-128-128,0-0-0,|12||128-128-128
+10,165,Multiplicador comun,730,355,95,11,8,2,0,3,-1,0,0,0,128-128-128,0-0-0,|12||128-128-128
+10,166,Reduccion tardia,730,400,80,11,8,2,0,3,-1,0,0,0,128-128-128,0-0-0,|12||128-128-128
+10,167,Modo estocastico,150,360,80,11,8,2,0,3,-1,0,0,0,128-128-128,0-0-0,|12||128-128-128
+10,168,Semilla,110,300,35,11,8,2,0,3,-1,0,0,0,128-128-128,0-0-0,|12||128-128-128
+10,169,Reduccion temprana,670,210,90,11,8,2,0,3,-1,0,0,0,128-128-128,0-0-0,|12||128-128-128
+10,170,Reduccion temprana,930,210,90,11,8,2,0,3,-1,0,0,0,128-128-128,0-0-0,|12||128-128-128
+10,171,Reduccion media,1190,210,75,11,8,2,0,3,-1,0,0,0,128-128-128,0-0-0,|12||128-128-128
+10,172,Reduccion media,1450,210,75,11,8,2,0,3,-1,0,0,0,128-128-128,0-0-0,|12||128-128-128
+10,173,Reduccion media,1710,210,75,11,8,2,0,3,-1,0,0,0,128-128-128,0-0-0,|12||128-128-128
+10,174,Reduccion tardia,930,650,80,11,8,2,0,3,-1,0,0,0,128-128-128,0-0-0,|12||128-128-128
+10,175,Reduccion tardia,1190,650,80,11,8,2,0,3,-1,0,0,0,128-128-128,0-0-0,|12||128-128-128
+10,176,Reduccion tardia,1450,650,80,11,8,2,0,3,-1,0,0,0,128-128-128,0-0-0,|12||128-128-128
+10,177,Reduccion tardia,1710,650,80,11,8,2,0,3,-1,0,0,0,128-128-128,0-0-0,|12||128-128-128
+1,178,138,13,0,0,0,0,0,64,0,-1--1--1,,1|(465,477)|
+1,179,10,13,0,0,0,0,0,64,0,-1--1--1,,1|(465,512)|
+1,180,156,14,0,0,0,0,0,64,0,-1--1--1,,1|(617,145)|
+1,181,169,14,0,0,0,0,0,64,0,-1--1--1,,1|(620,185)|
+1,182,15,14,0,0,0,0,0,64,0,-1--1--1,,1|(570,132)|
+1,183,157,16,0,0,0,0,0,64,0,-1--1--1,,1|(877,145)|
+1,184,170,16,0,0,0,0,0,64,0,-1--1--1,,1|(880,185)|
+1,185,17,16,0,0,0,0,0,64,0,-1--1--1,,1|(830,132)|
+1,186,158,18,0,0,0,0,0,64,0,-1--1--1,,1|(1137,145)|
+1,187,171,18,0,0,0,0,0,64,0,-1--1--1,,1|(1140,185)|
+1,188,19,18,0,0,0,0,0,64,0,-1--1--1,,1|(1090,132)|
+1,189,159,20,0,0,0,0,0,64,0,-1--1--1,,1|(1397,145)|
+1,190,172,20,0,0,0,0,0,64,0,-1--1--1,,1|(1400,185)|
+1,191,21,20,0,0,0,0,0,64,0,-1--1--1,,1|(1350,132)|
+1,192,160,22,0,0,0,0,0,64,0,-1--1--1,,1|(1657,145)|
+1,193,173,22,0,0,0,0,0,64,0,-1--1--1,,1|(1660,185)|
+1,194,23,22,0,0,0,0,0,64,0,-1--1--1,,1|(1610,132)|
+1,195,164,24,0,0,0,0,0,64,0,-1--1--1,,1|(1657,580)|
+1,196,177,24,0,0,0,0,0,64,0,-1--1--1,,1|(1660,620)|
+1,197,25,24,0,0,0,0,0,64,0,-1--1--1,,1|(1610,620)|
+1,198,163,26,0,0,0,0,0,64,0,-1--1--1,,1|(1397,580)|
+1,199,176,26,0,0,0,0,0,64,0,-1--1--1,,1|(1400,620)|
+1,200,27,26,0,0,0,0,0,64,0,-1--1--1,,1|(1350,620)|
+1,201,162,28,0,0,0,0,0,64,0,-1--1--1,,1|(1137,580)|
+1,202,175,28,0,0,0,0,0,64,0,-1--1--1,,1|(1140,620)|
+1,203,29,28,0,0,0,0,0,64,0,-1--1--1,,1|(1090,620)|
+1,204,161,30,0,0,0,0,0,64,0,-1--1--1,,1|(877,580)|
+1,205,174,30,0,0,0,0,0,64,0,-1--1--1,,1|(880,620)|
+1,206,31,30,0,0,0,0,0,64,0,-1--1--1,,1|(830,620)|
+1,207,165,32,0,0,0,0,0,64,0,-1--1--1,,1|(660,365)|
+1,208,166,32,0,0,0,0,0,64,0,-1--1--1,,1|(660,387)|
+1,209,33,32,0,0,0,0,0,64,0,-1--1--1,,1|(577,352)|
+1,210,40,42,0,0,0,0,0,64,0,-1--1--1,,1|(185,90)|
+1,211,41,42,0,0,0,0,0,64,0,-1--1--1,,1|(185,40)|
+1,212,39,42,0,0,0,0,0,64,0,-1--1--1,,1|(180,65)|
+1,213,42,44,0,0,0,0,0,64,0,-1--1--1,,1|(480,40)|
+1,214,43,44,0,0,0,0,0,64,0,-1--1--1,,1|(550,67)|
+1,215,167,52,0,0,0,0,0,64,0,-1--1--1,,1|(260,310)|
+1,216,36,52,0,0,0,0,0,64,0,-1--1--1,,1|(275,237)|
+1,217,37,52,0,0,0,0,0,64,0,-1--1--1,,1|(290,290)|
+1,218,38,52,0,0,0,0,0,64,0,-1--1--1,,1|(350,300)|
+1,219,34,52,0,0,0,0,0,64,0,-1--1--1,,1|(310,220)|
+1,220,35,52,0,0,0,0,0,64,0,-1--1--1,,1|(350,205)|
+1,221,168,52,0,0,0,0,0,64,0,-1--1--1,,1|(240,280)|
+1,222,93,56,0,0,0,0,0,64,0,-1--1--1,,1|(565,225)|
+1,223,1,56,0,0,0,0,0,64,0,-1--1--1,,1|(565,260)|
+1,224,98,60,0,0,0,0,0,64,0,-1--1--1,,1|(825,225)|
+1,225,3,60,0,0,0,0,0,64,0,-1--1--1,,1|(825,260)|
+1,226,103,64,0,0,0,0,0,64,0,-1--1--1,,1|(1085,225)|
+1,227,5,64,0,0,0,0,0,64,0,-1--1--1,,1|(1085,260)|
+1,228,108,68,0,0,0,0,0,64,0,-1--1--1,,1|(1345,225)|
+1,229,7,68,0,0,0,0,0,64,0,-1--1--1,,1|(1345,260)|
+1,230,113,72,0,0,0,0,0,64,0,-1--1--1,,1|(1540,280)|
+1,231,9,72,0,0,0,0,0,64,0,-1--1--1,,1|(1540,315)|
+1,232,118,76,0,0,0,0,0,64,0,-1--1--1,,1|(1475,515)|
+1,233,2,76,0,0,0,0,0,64,0,-1--1--1,,1|(1475,480)|
+1,234,123,80,0,0,0,0,0,64,0,-1--1--1,,1|(1215,515)|
+1,235,4,80,0,0,0,0,0,64,0,-1--1--1,,1|(1215,480)|
+1,236,128,84,0,0,0,0,0,64,0,-1--1--1,,1|(955,515)|
+1,237,6,84,0,0,0,0,0,64,0,-1--1--1,,1|(955,480)|
+1,238,133,88,0,0,0,0,0,64,0,-1--1--1,,1|(695,515)|
+1,239,8,88,0,0,0,0,0,64,0,-1--1--1,,1|(695,480)|
+1,240,14,93,0,0,0,0,0,64,0,-1--1--1,,1|(535,175)|
+1,241,1,93,0,0,0,0,0,64,0,-1--1--1,,1|(500,225)|
+1,242,16,98,0,0,0,0,0,64,0,-1--1--1,,1|(795,175)|
+1,243,3,98,0,0,0,0,0,64,0,-1--1--1,,1|(760,225)|
+1,244,18,103,0,0,0,0,0,64,0,-1--1--1,,1|(1055,175)|
+1,245,5,103,0,0,0,0,0,64,0,-1--1--1,,1|(1020,225)|
+1,246,20,108,0,0,0,0,0,64,0,-1--1--1,,1|(1315,175)|
+1,247,7,108,0,0,0,0,0,64,0,-1--1--1,,1|(1280,225)|
+1,248,22,113,0,0,0,0,0,64,0,-1--1--1,,1|(1575,175)|
+1,249,9,113,0,0,0,0,0,64,0,-1--1--1,,1|(1540,225)|
+1,250,24,118,0,0,0,0,0,64,0,-1--1--1,,1|(1575,570)|
+1,251,2,118,0,0,0,0,0,64,0,-1--1--1,,1|(1540,515)|
+1,252,26,123,0,0,0,0,0,64,0,-1--1--1,,1|(1315,570)|
+1,253,4,123,0,0,0,0,0,64,0,-1--1--1,,1|(1280,515)|
+1,254,28,128,0,0,0,0,0,64,0,-1--1--1,,1|(1055,570)|
+1,255,6,128,0,0,0,0,0,64,0,-1--1--1,,1|(1020,515)|
+1,256,30,133,0,0,0,0,0,64,0,-1--1--1,,1|(795,570)|
+1,257,8,133,0,0,0,0,0,64,0,-1--1--1,,1|(760,515)|
+1,258,32,138,0,0,0,0,0,64,0,-1--1--1,,1|(545,392)|
+1,259,10,138,0,0,0,0,0,64,0,-1--1--1,,1|(500,445)|
+1,260,45,142,0,0,0,0,0,64,0,-1--1--1,,1|(315,440)|
+1,261,13,142,0,0,0,0,0,64,0,-1--1--1,,1|(400,512)|
+1,262,45,146,0,0,0,0,0,64,0,-1--1--1,,1|(380,500)|
+1,263,13,146,0,0,0,0,0,64,0,-1--1--1,,1|(465,572)|
+1,264,46,150,0,0,0,0,0,64,0,-1--1--1,,1|(310,650)|
+1,265,12,150,0,0,0,0,0,64,0,-1--1--1,,1|(435,660)|
+1,266,47,155,0,0,0,0,0,64,0,-1--1--1,,1|(610,780)|
+1,267,12,155,0,0,0,0,0,64,0,-1--1--1,,1|(500,760)|
+*2 Bienestar y politicas
+$192-192-192,0,Times New Roman|12||0-0-0|0-0-0|0-0-255|-1--1--1|-1--1--1|96,96,75,0
+10,1,Casos pendientes,500,300,40,20,3,3,0,0,0,0,0,0
+10,2,Prob alerta,210,380,55,11,8,3,0,0,0,0,0,0
+10,3,Capacidad bienestar,720,200,95,11,8,3,0,0,0,0,0,0
+10,4,Fraccion abandono cola,650,430,110,11,8,3,0,0,0,0,0,0
+10,5,Cobertura bienestar,860,400,95,11,8,3,0,0,0,0,0,0
+10,6,Reduccion temprana,1150,400,90,11,8,3,0,0,0,0,0,0
+10,7,Reduccion media,1150,560,75,11,8,3,0,0,0,0,0,0
+10,8,Reduccion tardia,1150,720,80,11,8,3,0,0,0,0,0,0
+10,9,Politica activa,950,560,75,11,8,3,0,0,0,0,0,0
+10,10,Inicio politica,950,640,75,11,8,3,0,0,0,0,0,0
+10,11,Max reduccion,950,720,65,11,8,3,0,0,0,0,0,0
+10,12,Aplica temprana,1150,330,75,11,8,3,0,0,0,0,0,0
+10,13,Aplica media,1150,480,60,11,8,3,0,0,0,0,0,0
+10,14,Aplica tardia,1150,640,65,11,8,3,0,0,0,0,0,0
+10,15,Ef economico,1450,450,60,11,8,3,0,0,0,0,0,0
+10,16,Ef academico,1450,560,60,11,8,3,0,0,0,0,0,0
+10,17,Ef adaptacion,1450,670,65,11,8,3,0,0,0,0,0,0
+10,18,Peso eco temprana,1300,360,85,11,8,3,0,0,0,0,0,0
+10,19,Peso aca temprana,1300,400,85,11,8,3,0,0,0,0,0,0
+10,20,Peso ada temprana,1300,440,85,11,8,3,0,0,0,0,0,0
+10,21,Peso eco media,1300,520,70,11,8,3,0,0,0,0,0,0
+10,22,Peso aca media,1300,560,70,11,8,3,0,0,0,0,0,0
+10,23,Peso ada media,1300,600,70,11,8,3,0,0,0,0,0,0
+10,24,Peso eco tardia,1300,680,75,11,8,3,0,0,0,0,0,0
+10,25,Peso aca tardia,1300,720,75,11,8,3,0,0,0,0,0,0
+10,26,Peso ada tardia,1300,760,75,11,8,3,0,0,0,0,0,0
+12,27,48,210,300,10,8,0,3,0,0,-1,0,0,0
+1,28,30,1,4,0,0,22,0,0,0,-1--1--1,,1|(500,300)|
+1,29,30,27,100,0,0,22,0,0,0,-1--1--1,,1|(210,300)|
+11,30,48,330,300,6,8,34,3,0,0,1,0,0,0
+10,31,Alertas nuevas,330,318,70,11,40,3,0,0,-1,0,0,0
+12,32,48,800,300,10,8,0,3,0,0,-1,0,0,0
+1,33,35,32,4,0,0,22,0,0,0,-1--1--1,,1|(800,300)|
+1,34,35,1,100,0,0,22,0,0,0,-1--1--1,,1|(500,300)|
+11,35,48,680,300,6,8,34,3,0,0,1,0,0,0
+10,36,Casos atendidos,680,318,75,11,40,3,0,0,-1,0,0,0
+12,37,48,500,480,10,8,0,3,0,0,-1,0,0,0
+1,38,40,37,4,0,0,22,0,0,0,-1--1--1,,1|(500,480)|
+1,39,40,1,100,0,0,22,0,0,0,-1--1--1,,1|(500,300)|
+11,40,48,500,400,6,8,34,3,0,0,1,0,0,0
+10,41,Casos vencidos,550,400,70,11,40,3,0,0,-1,0,0,0
+10,42,Sem 1,230,200,30,11,8,2,0,3,-1,0,0,0,128-128-128,0-0-0,|12||128-128-128
+10,43,Sem 2,330,200,30,11,8,2,0,3,-1,0,0,0,128-128-128,0-0-0,|12||128-128-128
+10,44,Politica activa,1030,450,75,11,8,2,0,3,-1,0,0,0,128-128-128,0-0-0,|12||128-128-128
+10,45,Max reduccion,1030,610,65,11,8,2,0,3,-1,0,0,0,128-128-128,0-0-0,|12||128-128-128
+10,46,Politica activa,1030,690,75,11,8,2,0,3,-1,0,0,0,128-128-128,0-0-0,|12||128-128-128
+10,47,Max reduccion,1030,770,65,11,8,2,0,3,-1,0,0,0,128-128-128,0-0-0,|12||128-128-128
+1,48,1,5,0,0,0,0,0,64,0,-1--1--1,,1|(680,350)|
+1,49,36,5,0,0,0,0,0,64,0,-1--1--1,,1|(770,350)|
+1,50,5,6,0,0,0,0,0,64,0,-1--1--1,,1|(1005,400)|
+1,51,18,6,0,0,0,0,0,64,0,-1--1--1,,1|(1225,380)|
+1,52,19,6,0,0,0,0,0,64,0,-1--1--1,,1|(1225,400)|
+1,53,20,6,0,0,0,0,0,64,0,-1--1--1,,1|(1225,420)|
+1,54,44,6,0,0,0,0,0,64,0,-1--1--1,,1|(1090,425)|
+1,55,12,6,0,0,0,0,0,64,0,-1--1--1,,1|(1150,365)|
+1,56,45,6,0,0,0,0,0,64,0,-1--1--1,,1|(1090,505)|
+1,57,17,6,0,0,0,0,0,64,0,-1--1--1,,1|(1300,535)|
+1,58,15,6,0,0,0,0,0,64,0,-1--1--1,,1|(1300,425)|
+1,59,16,6,0,0,0,0,0,64,0,-1--1--1,,1|(1300,480)|
+1,60,44,7,0,0,0,0,0,64,0,-1--1--1,,1|(1090,505)|
+1,61,21,7,0,0,0,0,0,64,0,-1--1--1,,1|(1225,540)|
+1,62,22,7,0,0,0,0,0,64,0,-1--1--1,,1|(1225,560)|
+1,63,23,7,0,0,0,0,0,64,0,-1--1--1,,1|(1225,580)|
+1,64,45,7,0,0,0,0,0,64,0,-1--1--1,,1|(1090,585)|
+1,65,17,7,0,0,0,0,0,64,0,-1--1--1,,1|(1300,615)|
+1,66,15,7,0,0,0,0,0,64,0,-1--1--1,,1|(1300,505)|
+1,67,16,7,0,0,0,0,0,64,0,-1--1--1,,1|(1300,560)|
+1,68,13,7,0,0,0,0,0,64,0,-1--1--1,,1|(1150,520)|
+1,69,46,8,0,0,0,0,0,64,0,-1--1--1,,1|(1090,705)|
+1,70,24,8,0,0,0,0,0,64,0,-1--1--1,,1|(1225,700)|
+1,71,25,8,0,0,0,0,0,64,0,-1--1--1,,1|(1225,720)|
+1,72,26,8,0,0,0,0,0,64,0,-1--1--1,,1|(1225,740)|
+1,73,47,8,0,0,0,0,0,64,0,-1--1--1,,1|(1090,745)|
+1,74,17,8,0,0,0,0,0,64,0,-1--1--1,,1|(1300,695)|
+1,75,14,8,0,0,0,0,0,64,0,-1--1--1,,1|(1150,680)|
+1,76,15,8,0,0,0,0,0,64,0,-1--1--1,,1|(1300,585)|
+1,77,16,8,0,0,0,0,0,64,0,-1--1--1,,1|(1300,640)|
+1,78,10,9,0,0,0,0,0,64,0,-1--1--1,,1|(950,600)|
+1,79,2,31,0,0,0,0,0,64,0,-1--1--1,,1|(270,340)|
+1,80,42,31,0,0,0,0,0,64,0,-1--1--1,,1|(280,250)|
+1,81,43,31,0,0,0,0,0,64,0,-1--1--1,,1|(330,250)|
+1,82,3,36,0,0,0,0,0,64,0,-1--1--1,,1|(700,250)|
+1,83,1,36,0,0,0,0,0,64,0,-1--1--1,,1|(590,300)|
+1,84,4,41,0,0,0,0,0,64,0,-1--1--1,,1|(575,415)|
+1,85,1,41,0,0,0,0,0,64,0,-1--1--1,,1|(500,350)|
+1,86,36,41,0,0,0,0,0,64,0,-1--1--1,,1|(590,350)|
+*3 Indicadores
+$192-192-192,0,Times New Roman|12||0-0-0|0-0-0|0-0-255|-1--1--1|-1--1--1|96,96,75,0
+10,1,Desertores,900,260,40,20,3,3,0,0,0,0,0,0
+10,2,Ingresados acum,330,660,40,20,3,3,0,0,0,0,0,0
+10,3,Matriculados,300,260,60,11,8,3,0,0,0,0,0,0
+10,4,Desercion periodo,700,420,85,11,8,3,0,0,0,0,0,0
+10,5,Retencion 10,1300,260,60,11,8,3,0,0,0,0,0,0
+10,6,Desercion cohorte 10,1500,200,100,11,8,3,0,0,0,0,0,0
+10,7,Graduacion oportuna pct,1500,320,115,11,8,3,0,0,0,0,0,0
+10,8,Graduados periodo,330,850,85,11,8,3,0,0,0,0,0,0
+10,9,Error conservacion,680,660,90,11,8,3,0,0,0,0,0,0
+12,10,48,640,260,10,8,0,3,0,0,-1,0,0,0
+1,11,13,1,4,0,0,22,0,0,0,-1--1--1,,1|(900,260)|
+1,12,13,10,100,0,0,22,0,0,0,-1--1--1,,1|(640,260)|
+11,13,48,740,260,6,8,34,3,0,0,1,0,0,0
+10,14,Desercion total,740,278,75,11,40,3,0,0,-1,0,0,0
+10,15,Sem 1,90,80,30,11,8,2,0,3,-1,0,0,0,128-128-128,0-0-0,|12||128-128-128
+10,16,Desercion 1,500,80,55,11,8,2,0,3,-1,0,0,0,128-128-128,0-0-0,|12||128-128-128
+10,17,Tasa 1,1100,80,30,11,8,2,0,3,-1,0,0,0,128-128-128,0-0-0,|12||128-128-128
+10,18,Sem 2,90,120,30,11,8,2,0,3,-1,0,0,0,128-128-128,0-0-0,|12||128-128-128
+10,19,Desercion 2,500,120,55,11,8,2,0,3,-1,0,0,0,128-128-128,0-0-0,|12||128-128-128
+10,20,Tasa 2,1100,120,30,11,8,2,0,3,-1,0,0,0,128-128-128,0-0-0,|12||128-128-128
+10,21,Sem 3,90,160,30,11,8,2,0,3,-1,0,0,0,128-128-128,0-0-0,|12||128-128-128
+10,22,Desercion 3,500,160,55,11,8,2,0,3,-1,0,0,0,128-128-128,0-0-0,|12||128-128-128
+10,23,Tasa 3,1100,160,30,11,8,2,0,3,-1,0,0,0,128-128-128,0-0-0,|12||128-128-128
+10,24,Sem 4,90,200,30,11,8,2,0,3,-1,0,0,0,128-128-128,0-0-0,|12||128-128-128
+10,25,Desercion 4,500,200,55,11,8,2,0,3,-1,0,0,0,128-128-128,0-0-0,|12||128-128-128
+10,26,Tasa 4,1100,200,30,11,8,2,0,3,-1,0,0,0,128-128-128,0-0-0,|12||128-128-128
+10,27,Sem 5,90,240,30,11,8,2,0,3,-1,0,0,0,128-128-128,0-0-0,|12||128-128-128
+10,28,Desercion 5,500,240,55,11,8,2,0,3,-1,0,0,0,128-128-128,0-0-0,|12||128-128-128
+10,29,Tasa 5,1100,240,30,11,8,2,0,3,-1,0,0,0,128-128-128,0-0-0,|12||128-128-128
+10,30,Sem 6,90,280,30,11,8,2,0,3,-1,0,0,0,128-128-128,0-0-0,|12||128-128-128
+10,31,Desercion 6,500,280,55,11,8,2,0,3,-1,0,0,0,128-128-128,0-0-0,|12||128-128-128
+10,32,Tasa 6,1100,280,30,11,8,2,0,3,-1,0,0,0,128-128-128,0-0-0,|12||128-128-128
+10,33,Sem 7,90,320,30,11,8,2,0,3,-1,0,0,0,128-128-128,0-0-0,|12||128-128-128
+10,34,Desercion 7,500,320,55,11,8,2,0,3,-1,0,0,0,128-128-128,0-0-0,|12||128-128-128
+10,35,Tasa 7,1100,320,30,11,8,2,0,3,-1,0,0,0,128-128-128,0-0-0,|12||128-128-128
+10,36,Sem 8,90,360,30,11,8,2,0,3,-1,0,0,0,128-128-128,0-0-0,|12||128-128-128
+10,37,Desercion 8,500,360,55,11,8,2,0,3,-1,0,0,0,128-128-128,0-0-0,|12||128-128-128
+10,38,Tasa 8,1100,360,30,11,8,2,0,3,-1,0,0,0,128-128-128,0-0-0,|12||128-128-128
+10,39,Sem 9,90,400,30,11,8,2,0,3,-1,0,0,0,128-128-128,0-0-0,|12||128-128-128
+10,40,Desercion 9,500,400,55,11,8,2,0,3,-1,0,0,0,128-128-128,0-0-0,|12||128-128-128
+10,41,Tasa 9,1100,400,30,11,8,2,0,3,-1,0,0,0,128-128-128,0-0-0,|12||128-128-128
+10,42,Sem 10,90,440,30,11,8,2,0,3,-1,0,0,0,128-128-128,0-0-0,|12||128-128-128
+10,43,Desercion 10,500,440,60,11,8,2,0,3,-1,0,0,0,128-128-128,0-0-0,|12||128-128-128
+10,44,Tasa 10,1100,440,35,11,8,2,0,3,-1,0,0,0,128-128-128,0-0-0,|12||128-128-128
+10,45,Rezago,90,480,30,11,8,2,0,3,-1,0,0,0,128-128-128,0-0-0,|12||128-128-128
+10,46,Desercion rezago,500,480,80,11,8,2,0,3,-1,0,0,0,128-128-128,0-0-0,|12||128-128-128
+10,47,Ingreso,130,660,35,11,8,2,0,3,-1,0,0,0,128-128-128,0-0-0,|12||128-128-128
+10,48,Graduados,680,760,45,11,8,2,0,3,-1,0,0,0,128-128-128,0-0-0,|12||128-128-128
+10,49,Graduacion oportuna,110,820,95,11,8,2,0,3,-1,0,0,0,128-128-128,0-0-0,|12||128-128-128
+10,50,Graduacion rezago,110,880,85,11,8,2,0,3,-1,0,0,0,128-128-128,0-0-0,|12||128-128-128
+10,51,Eficiencia titulacion,1320,400,105,11,8,2,0,3,-1,0,0,0,128-128-128,0-0-0,|12||128-128-128
+1,52,47,2,0,0,0,0,0,64,0,-1--1--1,,1|(230,660)|
+1,53,42,3,0,0,0,0,0,64,0,-1--1--1,,1|(195,350)|
+1,54,45,3,0,0,0,0,0,64,0,-1--1--1,,1|(195,370)|
+1,55,15,3,0,0,0,0,0,64,0,-1--1--1,,1|(195,170)|
+1,56,18,3,0,0,0,0,0,64,0,-1--1--1,,1|(195,190)|
+1,57,21,3,0,0,0,0,0,64,0,-1--1--1,,1|(195,210)|
+1,58,24,3,0,0,0,0,0,64,0,-1--1--1,,1|(195,230)|
+1,59,27,3,0,0,0,0,0,64,0,-1--1--1,,1|(195,250)|
+1,60,30,3,0,0,0,0,0,64,0,-1--1--1,,1|(195,270)|
+1,61,33,3,0,0,0,0,0,64,0,-1--1--1,,1|(195,290)|
+1,62,36,3,0,0,0,0,0,64,0,-1--1--1,,1|(195,310)|
+1,63,39,3,0,0,0,0,0,64,0,-1--1--1,,1|(195,330)|
+1,64,14,4,0,0,0,0,0,64,0,-1--1--1,,1|(720,340)|
+1,65,3,4,0,0,0,0,0,64,0,-1--1--1,,1|(500,340)|
+1,66,44,5,0,0,0,0,0,64,0,-1--1--1,,1|(1200,350)|
+1,67,17,5,0,0,0,0,0,64,0,-1--1--1,,1|(1200,170)|
+1,68,20,5,0,0,0,0,0,64,0,-1--1--1,,1|(1200,190)|
+1,69,23,5,0,0,0,0,0,64,0,-1--1--1,,1|(1200,210)|
+1,70,26,5,0,0,0,0,0,64,0,-1--1--1,,1|(1200,230)|
+1,71,29,5,0,0,0,0,0,64,0,-1--1--1,,1|(1200,250)|
+1,72,32,5,0,0,0,0,0,64,0,-1--1--1,,1|(1200,270)|
+1,73,35,5,0,0,0,0,0,64,0,-1--1--1,,1|(1200,290)|
+1,74,38,5,0,0,0,0,0,64,0,-1--1--1,,1|(1200,310)|
+1,75,41,5,0,0,0,0,0,64,0,-1--1--1,,1|(1200,330)|
+1,76,5,6,0,0,0,0,0,64,0,-1--1--1,,1|(1400,230)|
+1,77,51,7,0,0,0,0,0,64,0,-1--1--1,,1|(1410,360)|
+1,78,5,7,0,0,0,0,0,64,0,-1--1--1,,1|(1400,290)|
+1,79,49,8,0,0,0,0,0,64,0,-1--1--1,,1|(220,835)|
+1,80,50,8,0,0,0,0,0,64,0,-1--1--1,,1|(220,865)|
+1,81,2,9,0,0,0,0,0,64,0,-1--1--1,,1|(505,660)|
+1,82,3,9,0,0,0,0,0,64,0,-1--1--1,,1|(490,460)|
+1,83,1,9,0,0,0,0,0,64,0,-1--1--1,,1|(790,460)|
+1,84,48,9,0,0,0,0,0,64,0,-1--1--1,,1|(680,710)|
+1,85,46,14,0,0,0,0,0,64,0,-1--1--1,,1|(620,370)|
+1,86,43,14,0,0,0,0,0,64,0,-1--1--1,,1|(620,350)|
+1,87,16,14,0,0,0,0,0,64,0,-1--1--1,,1|(620,170)|
+1,88,19,14,0,0,0,0,0,64,0,-1--1--1,,1|(620,190)|
+1,89,22,14,0,0,0,0,0,64,0,-1--1--1,,1|(620,210)|
+1,90,25,14,0,0,0,0,0,64,0,-1--1--1,,1|(620,230)|
+1,91,28,14,0,0,0,0,0,64,0,-1--1--1,,1|(620,250)|
+1,92,31,14,0,0,0,0,0,64,0,-1--1--1,,1|(620,270)|
+1,93,34,14,0,0,0,0,0,64,0,-1--1--1,,1|(620,290)|
+1,94,37,14,0,0,0,0,0,64,0,-1--1--1,,1|(620,310)|
+1,95,40,14,0,0,0,0,0,64,0,-1--1--1,,1|(620,330)|
+///---\\\
+:L<%^E!@
+9:Current
+15:0,0,0,0,0,0
+19:100,0
+27:0,
+34:0,
+4:Time
+5:Desercion cohorte 10
+24:0
+25:40
+26:40

@@ -1,0 +1,41 @@
+name: CI
+on:
+  push:
+  pull_request:
+
+jobs:
+  crud:
+    name: Pruebas del CRUD
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: crud
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - run: pip install -r requirements-dev.txt
+      - name: Pruebas unitarias y de integración con cobertura mínima
+        run: python -m pytest -q --cov=app --cov-report=term-missing --cov-fail-under=60
+
+  simulacion:
+    name: Verificación del modelo de simulación
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - run: pip install -r simulacion/scripts/requirements.txt
+      - name: Corridas deterministas contra la tabla de verificación
+        run: python simulacion/scripts/verificar_modelo.py simulacion/modelo/desercion_udec.mdl
+
+  docker:
+    name: Construcción de la imagen
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: docker build -t desercion-udec-api ./crud

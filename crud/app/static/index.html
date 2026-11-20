@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Permanencia UdeC · Seguimiento de la deserción</title>
+  <link rel="stylesheet" href="/static/styles.css">
+  <script src="/static/chart.umd.min.js" defer></script>
+  <script src="/static/app.js" defer></script>
+</head>
+<body>
+  <a class="saltar" href="#contenido">Saltar al contenido</a>
+
+  <!-- Inicio de sesión -->
+  <main id="vista-login" class="login" hidden>
+    <section class="login-tarjeta" aria-labelledby="titulo-login">
+      <div class="marca"><span class="marca-logo" aria-hidden="true">P</span><div><strong>Permanencia UdeC</strong><small>Ingeniería de Sistemas y Computación · Fusagasugá</small></div></div>
+      <h1 id="titulo-login">Iniciar sesión</h1>
+      <form id="form-login" novalidate>
+        <label for="login-email">Correo institucional</label>
+        <input id="login-email" name="username" type="email" autocomplete="username" required>
+        <p class="error-campo" id="err-login-email"></p>
+        <label for="login-clave">Contraseña</label>
+        <input id="login-clave" name="password" type="password" autocomplete="current-password" required minlength="8">
+        <p class="error-campo" id="err-login-clave"></p>
+        <p class="error-form" id="err-login" role="alert"></p>
+        <button class="btn btn-primario btn-bloque" type="submit">Entrar</button>
+      </form>
+      <details class="ayuda">
+        <summary>Usuarios de demostración</summary>
+        <p>admin@demo.edu.co · operador@demo.edu.co · consulta@demo.edu.co</p>
+        <p>Clave de desarrollo: <code>Cambiar-123</code>. Los datos son sintéticos.</p>
+      </details>
+    </section>
+  </main>
+
+  <!-- Aplicación -->
+  <div id="vista-app" class="app" hidden>
+    <header class="barra">
+      <button class="btn-menu" id="btn-menu" aria-label="Abrir menú" aria-expanded="false" aria-controls="menu">☰</button>
+      <div class="marca"><span class="marca-logo" aria-hidden="true">P</span><strong>Permanencia UdeC</strong></div>
+      <div class="usuario"><span id="usuario-nombre"></span><span class="rol" id="usuario-rol"></span>
+        <button class="btn btn-sutil" id="btn-salir" type="button">Salir</button></div>
+    </header>
+    <nav id="menu" class="menu" aria-label="Secciones"></nav>
+    <main id="contenido" class="contenido" tabindex="-1"></main>
+  </div>
+
+  <!-- Ventana modal reutilizable -->
+  <div class="modal-fondo" id="modal" hidden>
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modal-titulo">
+      <header class="modal-cab"><h2 id="modal-titulo"></h2><button class="btn-cerrar" id="modal-cerrar" aria-label="Cerrar">×</button></header>
+      <div id="modal-cuerpo"></div>
+    </div>
+  </div>
+  <div class="avisos" id="avisos" aria-live="polite"></div>
+</body>
+</html>

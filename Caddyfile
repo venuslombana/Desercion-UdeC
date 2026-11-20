@@ -1,0 +1,12 @@
+# Proxy inverso con HTTPS. En local usa una autoridad certificadora interna (tls internal).
+# En un servidor con dominio público basta cambiar "localhost" por el dominio y quitar "tls internal":
+# Caddy obtiene el certificado de Let's Encrypt automáticamente.
+localhost {
+	tls internal
+	encode gzip
+	reverse_proxy api:8000
+}
+
+http://localhost {
+	redir https://{host}{uri} permanent
+}

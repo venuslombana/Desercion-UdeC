@@ -1,0 +1,5 @@
+pysd>=3.14
+numpy
+scipy
+pandas
+matplotlib

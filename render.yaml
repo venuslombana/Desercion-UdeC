@@ -1,0 +1,25 @@
+# Blueprint de Render: crea la base PostgreSQL gratuita y el servicio web con Docker.
+# En Render: New > Blueprint > elegir este repositorio > Apply.
+databases:
+  - name: permanencia-db
+    plan: free
+    databaseName: desercion
+    user: desercion
+
+services:
+  - type: web
+    name: permanencia-udec
+    runtime: docker
+    plan: free
+    dockerfilePath: ./crud/Dockerfile
+    dockerContext: ./crud
+    healthCheckPath: /api/health
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: permanencia-db
+          property: connectionString
+      - key: SECRET_KEY
+        generateValue: true
+      - key: SEED_ON_START
+        value: "1"
