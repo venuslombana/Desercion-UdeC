@@ -168,6 +168,16 @@ def test_tablero_real_vs_simulado():
     assert any(p["real"] and p["simulado"] for p in j["serie"])
     assert c.get("/api/tablero", params={"escenario": "No existe"}, headers=CON).status_code == 404
 
+def test_mapa_de_cohortes():
+    j = c.get("/api/cohortes-mapa", headers=CON).json()
+    assert j["semestres"] == 10 and j["filas"]
+    primera = j["filas"][0]
+    assert primera["permanencia"][0] == 100.0                      # en el semestre de ingreso todos están matriculados
+    vals = [v for v in primera["permanencia"] if v is not None]
+    assert all(a >= b for a, b in zip(vals, vals[1:]))              # la permanencia no sube con el tiempo
+    assert j["filas"][-1]["permanencia"][-1] is None                 # la cohorte más reciente no tiene futuro todavía
+    assert c.get("/api/cohortes-mapa", params={"semestres": 99}, headers=CON).status_code == 422
+
 def test_carga_de_proyecciones_validada():
     r = c.post("/api/proyecciones", files={"archivo": ("p.csv", b"a,b\n1,2\n", "text/csv")}, headers=ADM)
     assert r.status_code == 422

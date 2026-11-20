@@ -248,6 +248,36 @@ def tablero(escenario: str = "E0 Base", db: Session = Depends(get_db), u=Depends
             "capacidad": cap.__dict__, "tarjetas": tarjetas, "serie": serie, "tolerancia": tol}
 
 
+@router.get("/cohortes-mapa")
+def mapa_cohortes(semestres: int = Query(10, ge=2, le=14), db: Session = Depends(get_db), u=Depends(require(*TODOS))):
+    """Mapa de calor de permanencia: para cada cohorte, porcentaje de ingresantes matriculados k semestres después del ingreso.
+
+    El semestre 1 es el periodo de ingreso. Las celdas futuras (periodos que aún no existen) van en null.
+    """
+    periodos = [c for (c,) in db.execute(text("SELECT codigo FROM periodo_academico ORDER BY codigo"))]
+    pos = {c: i for i, c in enumerate(periodos)}
+    ingresan = dict(db.execute(text("""
+        SELECT p.codigo, COUNT(e.id) FROM estudiante e JOIN cohorte co ON co.id = e.cohorte_id
+        JOIN periodo_academico p ON p.id = co.periodo_ingreso_id WHERE e.eliminado_en IS NULL GROUP BY p.codigo""")).all())
+    presentes: dict[tuple[str, int], int] = {}
+    for coh, per, n in db.execute(text("""
+        SELECT pi.codigo, pm.codigo, COUNT(DISTINCT m.estudiante_id)
+        FROM matricula m JOIN estudiante e ON e.id = m.estudiante_id JOIN cohorte co ON co.id = e.cohorte_id
+        JOIN periodo_academico pi ON pi.id = co.periodo_ingreso_id JOIN periodo_academico pm ON pm.id = m.periodo_id
+        WHERE m.eliminado_en IS NULL AND e.eliminado_en IS NULL GROUP BY pi.codigo, pm.codigo""")):
+        k = pos[per] - pos[coh] + 1
+        if 1 <= k <= semestres:
+            presentes[(coh, k)] = presentes.get((coh, k), 0) + n
+    filas = []
+    for coh in sorted(ingresan):
+        celdas = []
+        for k in range(1, semestres + 1):
+            existe = pos[coh] + k - 1 < len(periodos)
+            celdas.append(round(100 * presentes.get((coh, k), 0) / ingresan[coh], 1) if existe and ingresan[coh] else None)
+        filas.append({"cohorte": coh, "ingresan": ingresan[coh], "permanencia": celdas})
+    return {"semestres": semestres, "filas": filas}
+
+
 @router.post("/proyecciones", status_code=201)
 async def cargar_proyecciones(archivo: UploadFile = File(...), db: Session = Depends(get_db), u=Depends(require(A))):
     """Reemplaza las proyecciones del tablero con un CSV generado por el modelo (solo administrador)."""

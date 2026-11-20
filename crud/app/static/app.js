@@ -70,6 +70,8 @@ const ICONOS = {
   embudo: "M3 4h18l-7 9v6l-4 2v-8z",
   ficha: "M4 4h16a1 1 0 0 1 1 1v14a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1z|M9 11a2 2 0 1 0 0-4 2 2 0 0 0 0 4|M6 16a3 3 0 0 1 6 0|M14 9h4|M14 13h4",
   teclado: "M3 6h18v12H3z|M7 10h.01|M11 10h.01|M15 10h.01|M7 14h10",
+  proyector: "M3 4h18v12H3z|M12 16v4|M8 20h8|M10 8l4 2-4 2z", pausa: "M7 4h3v16H7z|M14 4h3v16h-3z", play: "M6 4l14 8-14 8z",
+  calor: "M3 3h5v5H3z|M10 3h5v5h-5z|M17 3h4v5h-4z|M3 10h5v5H3z|M10 10h5v5h-5z|M3 17h5v4H3z",
 };
 function icono(nombre, cls = "") {
   const ns = "http://www.w3.org/2000/svg";
@@ -938,8 +940,23 @@ document.addEventListener("DOMContentLoaded", () => {
     if (e.key === "Escape" && $("#paleta")) { cerrarPaleta(); return; }
     if (e.key === "Escape") { if (!$("#modal").hidden) cerrarModal(); else alternarMenu(false); } });
   window.addEventListener("hashchange", () => { if (sesion.token) router(); });
-  if (sesion.token) mostrarApp(); else mostrarLogin();
+  $("#btn-presentar").addEventListener("click", () => presentacion());
+  iniciar();
 });
+
+// ------------------------------------------------------------------ pantalla de carga: espera al servidor (Render puede estar despertando)
+const espera = (ms) => new Promise((r) => setTimeout(r, ms));
+async function iniciar() {
+  const t0 = performance.now(), msg = $("#cargando-msg");
+  const frases = ["Preparando el sistema…", "Conectando con la base de datos…", "Cargando indicadores…"];
+  let i = 0; const rotar = setInterval(() => { msg.textContent = frases[++i % frases.length]; }, 1400);
+  for (let intento = 0; intento < 40; intento++) {
+    try { const r = await fetch("/api/health", { cache: "no-store" }); if (r.ok) break; } catch { /* servidor aún no responde */ }
+    clearInterval(rotar); msg.textContent = "El servidor está despertando; puede tardar hasta un minuto…"; await espera(3000);
+  }
+  try { if (sesion.token) await mostrarApp(); else mostrarLogin(); }
+  finally { clearInterval(rotar); setTimeout(() => $("#cargando").classList.add("fuera"), Math.max(0, 900 - (performance.now() - t0))); }
+}
 
 // ================================================================== versión 2: animaciones, tema, buscador, ficha 360 y laboratorio
 // ------------------------------------------------------------------ cifras que "cuentan" desde cero
@@ -983,6 +1000,7 @@ function comandosBase() {
   }
   const oscuro = document.documentElement.dataset.tema === "oscuro";
   lista.push({ grupo: "Acciones", ic: oscuro ? "sol" : "luna", t: oscuro ? "Cambiar a modo claro" : "Cambiar a modo oscuro", sub: "Apariencia", run: alternarTema });
+  lista.push({ grupo: "Acciones", ic: "proyector", t: "Iniciar el modo presentación", sub: "Pantalla completa con diapositivas de datos vivos", run: () => presentacion() });
   lista.push({ grupo: "Acciones", ic: "ruta", t: "Ver el recorrido guiado", sub: "Ayuda", run: () => recorrido(0) });
   lista.push({ grupo: "Acciones", ic: "salir", t: "Cerrar sesión", sub: sesion.usuario?.nombre || "", run: () => $("#btn-salir").click() });
   return lista;
@@ -1097,7 +1115,7 @@ const COLORES_ESC = ["#F7931E", "#00A99D", "#007B3E", "#DAAA00", "#79C000"];
 async function vistaLaboratorio(main) {
   const primero = await api("/api/tablero");
   const nombres = primero.escenarios;
-  const [series, nivel] = await Promise.all([Promise.all(nombres.map((n) => (n === primero.escenario ? primero : api("/api/tablero?escenario=" + encodeURIComponent(n))))), api("/api/reportes/desercion-nivel")]);
+  const [series, nivel, mapa] = await Promise.all([Promise.all(nombres.map((n) => (n === primero.escenario ? primero : api("/api/tablero?escenario=" + encodeURIComponent(n))))), api("/api/reportes/desercion-nivel"), api("/api/cohortes-mapa").catch(() => null)]);
   const periodos = series[0].serie.map((s) => s.periodo);
   const horizonte = periodos.filter((p) => p >= "2026-1" && series[0].serie.find((s) => s.periodo === p)?.simulado);
   const valor = (i, p, k) => series[i].serie.find((s) => s.periodo === p)?.simulado?.[k] ?? null;
@@ -1152,6 +1170,9 @@ async function vistaLaboratorio(main) {
     el("section", { class: "tarjeta", style: null }, el("h2", {}, icono("reloj"), "Máquina del tiempo"),
       el("p", { class: "sub" }, "Mueve el control para ver cómo estaría el programa en cada semestre proyectado."),
       el("div", { class: "maquina" }, el("span", { class: "sub" }, horizonte[0]), rango, el("span", { class: "sub" }, horizonte[horizonte.length - 1]), salida), foto),
+    mapa ? el("section", { class: "tarjeta" }, el("h2", {}, icono("calor"), "Lo que ya pasó: permanencia de cada cohorte"),
+      el("p", { class: "sub" }, "Cada fila es una cohorte y cada columna, los semestres desde que entró. El color indica qué porcentaje sigue matriculado: verde, la mayoría; rojo, se perdió buena parte. Pasa el mouse por una celda para ver el detalle."),
+      mapaCalor(mapa)) : null,
     el("section", { class: "tarjeta" }, el("h2", {}, icono("embudo"), "De cada 100 estudiantes que entran, ¿cuántos siguen en cada semestre?"),
       el("div", { class: "embudo-dato" }, el("span", { class: "grande" }, fmt(llegan, 0)), el("div", {}, el("b", {}, "llegan a décimo semestre"),
         el("p", { class: "sub" }, `En el primer año se pierden cerca de ${fmt(primerAnio, 0)} de cada 100: por eso la cola de Bienestar prioriza los primeros semestres.`))),
@@ -1177,4 +1198,181 @@ async function vistaLaboratorio(main) {
     { type: "line", label: "Modelo calibrado", data: mod, borderColor: COLOR.oro, backgroundColor: COLOR.oro, pointRadius: 4, pointBorderColor: "#fff", pointBorderWidth: 2, order: 1 }] },
     options: { interaction: { mode: "index", intersect: false }, plugins: { tooltip: { callbacks: { label: (c) => ` ${c.dataset.label}: ${fmt(c.parsed.y, 1)} de cada 100` } } },
       scales: ejes({ min: 0, max: 100, title: { display: true, text: "Estudiantes de cada 100", font: { weight: "700" } } }) } });
+}
+
+// ------------------------------------------------------------------ mapa de calor de permanencia por cohorte
+const ESCALA_CALOR = [[45, "#c0262d"], [60, "#F7931E"], [75, "#FBE122"], [88, "#79C000"], [100, "#007B3E"]];
+function colorCalor(v) {
+  const h = (x) => [parseInt(x.slice(1, 3), 16), parseInt(x.slice(3, 5), 16), parseInt(x.slice(5, 7), 16)];
+  if (v <= ESCALA_CALOR[0][0]) return h(ESCALA_CALOR[0][1]);
+  for (let i = 1; i < ESCALA_CALOR.length; i++) {
+    const [v1, c1] = ESCALA_CALOR[i], [v0, c0] = ESCALA_CALOR[i - 1];
+    if (v <= v1) { const k = (v - v0) / (v1 - v0), a = h(c0), b = h(c1); return a.map((x, j) => Math.round(x + (b[j] - x) * k)); }
+  }
+  return h(ESCALA_CALOR[ESCALA_CALOR.length - 1][1]);
+}
+function mapaCalor(d, { ultimas = 0 } = {}) {
+  const filas = ultimas ? d.filas.slice(-ultimas) : d.filas;
+  const cab = el("tr", {}, el("th", { class: "coh", scope: "col" }, "Cohorte"), [...Array(d.semestres).keys()].map((k) => el("th", { scope: "col" }, `Sem ${k + 1}`)));
+  const cuerpo = filas.map((f, i) => el("tr", {}, el("th", { class: "coh", scope: "row" }, f.cohorte, el("small", {}, `${f.ingresan} ingresan`)),
+    f.permanencia.map((v, k) => {
+      if (v === null) return el("td", { class: "vacia", title: `Cohorte ${f.cohorte}: el semestre ${k + 1} todavía no ocurre` }, "·");
+      const [r, g, b] = colorCalor(v), claro = 0.299 * r + 0.587 * g + 0.114 * b > 150;
+      const td = el("td", { title: `Cohorte ${f.cohorte} · semestre ${k + 1}: ${fmt(v, 1)} % sigue matriculado (≈ ${Math.round((v * f.ingresan) / 100)} de ${f.ingresan})` }, fmt(v, 0));
+      td.style.backgroundColor = `rgb(${r},${g},${b})`; td.style.color = claro ? "#00482B" : "#fff"; td.style.animationDelay = `${(i * 0.03 + k * 0.04).toFixed(2)}s`;
+      return td;
+    })));
+  return el("div", {}, el("div", { class: "mapa-env" }, el("table", { class: "mapa" }, el("caption", { class: "saltar" }, "Permanencia por cohorte y semestre"), el("thead", {}, cab), el("tbody", {}, cuerpo))),
+    el("div", { class: "mapa-leyenda" }, "45 % o menos", el("span", { class: "escala" }), "100 % sigue matriculado", el("span", { class: "chip chip-gris" }, "· = semestre que aún no llega")));
+}
+
+// ------------------------------------------------------------------ modo presentación (diapositivas con los datos vivos del sistema)
+let graficasPres = [];
+async function presentacion() {
+  if ($("#pres")) return;
+  cerrarModal(); cerrarPaleta();
+  const capa = el("div", { class: "pres pres-oscura", id: "pres", role: "dialog", "aria-modal": "true", "aria-label": "Modo presentación" },
+    el("div", { class: "pres-portada" }, el("div", { class: "cargando-barra" }, el("span", {})), el("p", {}, "Preparando la presentación…")));
+  document.body.append(capa);
+  try { await document.documentElement.requestFullscreen?.(); } catch { /* el navegador no permitió pantalla completa */ }
+  // datos
+  let d;
+  try {
+    const t = await api("/api/tablero");
+    const [series, nivel, mapa, cola] = await Promise.all([Promise.all(t.escenarios.map((n) => (n === t.escenario ? t : api("/api/tablero?escenario=" + encodeURIComponent(n))))),
+      api("/api/reportes/desercion-nivel"), api("/api/cohortes-mapa").catch(() => null), api("/api/bienestar/cola")]);
+    d = { t, series, nivel, mapa, cola, nombres: t.escenarios };
+  } catch (e) { capa.remove(); aviso("No se pudo preparar la presentación: " + e.message, "error"); return; }
+  const ultReal = [...d.t.serie].reverse().find((x) => x.real);
+  const mat = ultReal.real.matriculados, des = Math.round(ultReal.real.desercion_periodo * mat), gra = ultReal.real.graduados;
+  const filasN = d.nivel.filas.filter((f) => f[0] <= 10 && typeof f[4] === "number");
+  let n100 = 100; const embudo = filasN.map((f) => { const v = n100; n100 *= 1 - f[4] / 100; return v; });
+  const primerAnio = 100 - (embudo[2] ?? n100), llegan = embudo[embudo.length - 1];
+  const horizonte = d.t.serie.map((x) => x.periodo).filter((p) => p >= "2026-1");
+  const val = (i, p, k) => d.series[i].serie.find((x) => x.periodo === p)?.simulado?.[k] ?? null;
+  const prom = (a) => a.reduce((x, y) => x + y, 0) / Math.max(1, a.length);
+  const res = d.nombres.map((nm, i) => ({ nm, color: COLORES_ESC[i % COLORES_ESC.length], des: prom(horizonte.map((p) => val(i, p, "desercion_periodo"))), mat: val(i, horizonte[horizonte.length - 1], "matriculados") }));
+  const mejor = res.reduce((a, b) => (b.des < a.des ? b : a)), base = res[0];
+  const todosEnMargen = d.t.tarjetas.every((x) => x.dentro_margen !== false);
+  const u = sesion.usuario || {};
+
+  const lienzo = (txt) => el("canvas", { role: "img", "aria-label": txt });
+  const DIAPOS = [
+    { oscura: true, pintar: () => el("div", { class: "pres-portada" },
+        el("img", { src: "/static/img/logo-udec.png", alt: "Escudo de la Universidad de Cundinamarca" }),
+        el("h1", {}, "Permanencia ", el("span", {}, "UdeC")),
+        el("p", {}, "Sistema de alerta temprana y seguimiento de la deserción estudiantil, con un modelo de simulación que proyecta el efecto de cada política."),
+        el("p", { class: "autor" }, "Venus Alejandra Lombana Rueda", el("small", {}, "Proyecto integrador de nivelación · Ingeniería de Sistemas y Computación · Seccional Fusagasugá"))) },
+    { etiqueta: "El problema", titulo: `En ${ultReal.periodo}, ${fmt(des, 0)} de ${fmt(mat, 0)} estudiantes dejaron el programa`,
+      mensaje: el("span", {}, "La deserción por periodo fue de ", el("b", {}, pct(ultReal.real.desercion_periodo, 1)), `. Y el golpe más fuerte llega temprano: en el primer año se pierden cerca de `, el("b", {}, `${fmt(primerAnio, 0)} de cada 100`), " estudiantes."),
+      pintar: () => { const c = lienzo("Cómo terminaron los estudiantes");
+        const nodo = el("div", { class: "pres-grid" },
+          el("section", { class: "tarjeta" }, el("div", { class: "kpi-cab" }, "Llegan a décimo semestre"), el("div", { class: "dato-gigante" }, fmt(llegan, 0)), el("p", { class: "pres-mensaje" }, "de cada 100 que entran"),
+            el("div", { class: "kpi-cab" }, "Deserción del periodo"), el("div", { class: "dato-gigante rojo" }, pct(ultReal.real.desercion_periodo, 1))),
+          el("section", { class: "tarjeta" }, el("div", { class: "grafica" }, c)));
+        return [nodo, () => gp(c, { type: "doughnut", data: { labels: ["Continúan", "Desertan", "Se gradúan"], datasets: [{ data: [mat - des - gra, des, gra], backgroundColor: [COLOR.verde, COLOR.rojo, COLOR.turquesa], borderColor: cssVar("--sup"), borderWidth: 5, hoverOffset: 16, borderRadius: 8, spacing: 3 }] },
+          options: { cutout: "66%", plugins: { centro: { valor: fmt(mat, 0), texto: "estudiantes" }, legend: { position: "right", labels: { font: { size: 15, weight: "700" } } } }, animation: { animateRotate: true, duration: 1500 } } })]; } },
+    d.mapa ? { etiqueta: "Dónde se pierden", titulo: "Las cohortes pierden más estudiantes al comienzo",
+      mensaje: el("span", {}, "Cada fila es una cohorte y cada columna, un semestre desde el ingreso. El salto de color más grande ocurre entre el semestre 1 y el 3: ahí se va la mayor parte de quienes desertan. Por eso las alertas y la cola de Bienestar priorizan a los que van empezando."),
+      pintar: () => el("section", { class: "tarjeta" }, mapaCalor(d.mapa, { ultimas: 8 })) } : null,
+    { etiqueta: "Validación del modelo", titulo: todosEnMargen ? "El modelo reproduce lo que pasó, dentro del margen del ±15 %" : "El modelo necesita recalibrarse: un indicador salió del margen",
+      mensaje: el("span", {}, "La línea verde es lo registrado en el sistema; la dorada, lo que calcula el modelo en Vensim. La banda muestra el margen de tolerancia que definimos para aceptar el modelo."),
+      pintar: () => { const c = lienzo("Deserción real frente a simulada"); const nodo = el("section", { class: "tarjeta" }, el("div", { class: "grafica" }, c));
+        const lab = d.t.serie.map((x) => x.periodo), tol = d.t.tolerancia;
+        const sim = d.t.serie.map((x) => (x.simulado ? +(100 * x.simulado.desercion_periodo).toFixed(2) : null));
+        return [nodo, () => gp(c, { type: "line", data: { labels: lab, datasets: [
+          { label: "Real (sistema)", data: d.t.serie.map((x) => (x.real ? +(100 * x.real.desercion_periodo).toFixed(2) : null)), borderColor: COLOR.verde, backgroundColor: degradado(COLOR.verde), fill: "origin", pointRadius: 3.5, pointBackgroundColor: COLOR.verde, pointBorderColor: "#fff" },
+          { label: "Simulado (modelo)", data: sim, borderColor: COLOR.oro, borderDash: [8, 5], pointRadius: 0 },
+          { label: "_inf", data: sim.map((v) => (v === null ? null : v * (1 - tol))), borderWidth: 0, pointRadius: 0, fill: false },
+          { label: `Margen ±${fmt(100 * tol, 0)} %`, data: sim.map((v) => (v === null ? null : v * (1 + tol))), borderWidth: 0, pointRadius: 0, fill: "-1", backgroundColor: rgba("#DAAA00", .18) }] },
+          options: { interaction: { mode: "index", intersect: false }, plugins: { marca: { etiqueta: "2026-1", texto: "Proyección" }, legend: { labels: { filter: (it) => !it.text.startsWith("_"), font: { size: 14, weight: "700" } } }, tooltip: { filter: (it) => it.datasetIndex < 2 } },
+            scales: ejes({ ticks: { callback: (v) => v + " %" } }) } })]; } },
+    { etiqueta: "¿Qué pasaría si…?", titulo: `${mejor.nm} baja la deserción ${fmt(100 * (base.des - mejor.des), 1)} puntos frente a no hacer nada`,
+      mensaje: el("span", {}, `Proyección 2026–2030. En ${horizonte[horizonte.length - 1]} el programa tendría `, el("b", {}, `${fmt(mejor.mat - base.mat, 0)} estudiantes más`), " matriculados que en el escenario base."),
+      pintar: () => { const c = lienzo("Escenarios de la simulación");
+        const nodo = el("div", { class: "pres-grid" },
+          el("div", { class: "esc-rejilla" }, res.map((r) => { const x = el("section", { class: "tarjeta esc-tarjeta" }, r === mejor ? el("span", { class: "cinta" }, icono("trofeo"), "Recomendado") : null, el("h3", {}, el("i", {}), r.nm),
+            el("div", { class: "esc-fila" }, el("span", {}, "Deserción promedio"), el("b", {}, pct(r.des, 2))), el("div", { class: "esc-fila" }, el("span", {}, `Matriculados ${horizonte[horizonte.length - 1]}`), el("b", {}, fmt(r.mat, 0))));
+            x.style.setProperty("--c", r.color); return x; })),
+          el("section", { class: "tarjeta" }, el("div", { class: "grafica" }, c)));
+        const sub = d.t.serie.filter((x) => x.periodo >= "2021-1").map((x) => x.periodo);
+        return [nodo, () => gp(c, { type: "line", data: { labels: sub, datasets: [
+          { label: "Real", data: sub.map((p) => { const x = d.series[0].serie.find((y) => y.periodo === p); return x?.real ? +(100 * x.real.desercion_periodo).toFixed(2) : null; }), borderColor: cssVar("--gris-2"), pointRadius: 3 },
+          ...res.map((r, i) => ({ label: r.nm, data: sub.map((p) => { const v = val(i, p, "desercion_periodo"); return v === null ? null : +(100 * v).toFixed(2); }), borderColor: r.color, borderDash: i === 0 ? [8, 5] : [], pointRadius: 0, borderWidth: 4,
+            backgroundColor: degradado(r.color, .12), fill: r === mejor ? "origin" : false }))] },
+          options: { interaction: { mode: "index", intersect: false }, plugins: { marca: { etiqueta: "2026-1", texto: "Inicio de las políticas" }, legend: { labels: { font: { size: 13, weight: "700" } } } }, scales: ejes({ ticks: { callback: (v) => v + " %" } }) } })]; } },
+    { etiqueta: "Cómo se actúa", titulo: "Cada alerta llega a Bienestar con un apoyo sugerido y una prioridad pública",
+      mensaje: el("span", {}, `Hoy hay `, el("b", {}, `${d.cola.casos.length} casos en cola`), ` y Bienestar va en ${d.cola.capacidad.casos} de ${fmt(d.cola.capacidad.capacidad)} casos de su capacidad. La prioridad no usa estrato ni condición laboral.`),
+      pintar: () => el("div", { class: "pres-grid igual" }, tarjetaCapacidad(d.cola.capacidad, d.cola.periodo),
+        el("section", { class: "tarjeta" }, el("ul", { class: "pres-lista" },
+          el("li", {}, el("span", {}, icono("alertas")), "Se registra la alerta y el sistema calcula su prioridad: nivel, semestre y materias básicas perdidas."),
+          el("li", {}, el("span", {}, icono("apoyos")), "Sugiere el apoyo según la etapa del estudiante y sus factores de riesgo."),
+          el("li", {}, el("span", {}, icono("cola")), "Bienestar atiende en orden y el semáforo avisa si se acerca a su límite."),
+          el("li", {}, el("span", {}, icono("auditoria")), "Todo queda en la auditoría: quién hizo qué y cuándo.")))) },
+    { oscura: true, etiqueta: "Recomendación", titulo: `Adoptar ${mejor.nm}`,
+      mensaje: el("span", {}, "Alertas tempranas en todos los semestres, una ruta de permanencia integral y Bienestar dimensionado para 32 casos por semestre."),
+      pintar: () => el("div", { class: "pres-grid igual" },
+        el("ul", { class: "pres-lista" },
+          el("li", {}, el("span", {}, icono("check")), `Deserción proyectada de ${pct(mejor.des, 1)} (hoy ${pct(base.des, 1)} si no se hace nada).`),
+          el("li", {}, el("span", {}, icono("personas")), `${fmt(mejor.mat - base.mat, 0)} estudiantes más en el programa en ${horizonte[horizonte.length - 1]}.`),
+          el("li", {}, el("span", {}, icono("simulacion")), "Monitoreo continuo: si lo real se aleja más de 15 % del modelo, se recalibra con los datos del sistema.")),
+        el("div", { class: "pres-portada" }, el("h1", {}, "¡Gracias!"), el("p", {}, "Ahora, la demostración en vivo →"), el("p", { class: "autor" }, el("small", {}, "Pulsa Esc para volver al sistema")))) },
+  ].filter(Boolean);
+
+  let i = 0, auto = null;
+  const gp = (c, cfg) => { if (!window.Chart || !c.isConnected) return; prepararChart(); cfg.options.responsive = true; cfg.options.maintainAspectRatio = false; graficasPres.push(new Chart(c, cfg)); };
+  const cuerpo = el("div", { class: "pres-cuerpo" });
+  const num = el("span", { class: "pres-num" }), barra = el("span", {});
+  const bAuto = el("button", { class: "btn-icono", type: "button", "aria-pressed": "false", title: "Avance automático (A)", "aria-label": "Avance automático" }, icono("play"));
+  const ir = (nuevo, atras = false) => {
+    i = Math.max(0, Math.min(DIAPOS.length - 1, nuevo));
+    graficasPres.forEach((g) => g.destroy()); graficasPres = [];
+    const dp = DIAPOS[i];
+    capa.classList.toggle("pres-oscura", !!dp.oscura);
+    let contenido = dp.pintar(), despues = null;
+    if (Array.isArray(contenido)) [contenido, despues] = contenido;
+    const diapo = el("div", { class: "pres-diapo" + (atras ? " atras" : "") },
+      dp.etiqueta ? el("span", { class: "pres-etiqueta" }, dp.etiqueta) : null, dp.titulo ? el("h2", { class: "pres-titulo" }, dp.titulo) : null,
+      dp.mensaje ? el("p", { class: "pres-mensaje" }, dp.mensaje) : null, contenido);
+    cuerpo.replaceChildren(diapo);
+    num.textContent = `${i + 1} / ${DIAPOS.length}`; barra.style.width = `${(100 * (i + 1)) / DIAPOS.length}%`;
+    animarBarras(cuerpo); contarValores(cuerpo); if (despues) requestAnimationFrame(despues);
+    if (auto && i === DIAPOS.length - 1) alternarAuto();
+  };
+  const alternarAuto = () => {
+    if (auto) { clearInterval(auto); auto = null; } else auto = setInterval(() => ir(i + 1), 15000);
+    bAuto.setAttribute("aria-pressed", String(!!auto)); bAuto.replaceChildren(icono(auto ? "pausa" : "play"));
+  };
+  const salir = () => {
+    if (auto) clearInterval(auto);
+    graficasPres.forEach((g) => g.destroy()); graficasPres = [];
+    document.removeEventListener("keydown", teclas, true); document.removeEventListener("fullscreenchange", alSalirPantalla);
+    capa.remove(); if (document.fullscreenElement) document.exitFullscreen?.().catch(() => {});
+  };
+  const teclas = (e) => {
+    if (["ArrowRight", "PageDown", " ", "Enter"].includes(e.key)) { e.preventDefault(); ir(i + 1); }
+    else if (["ArrowLeft", "PageUp", "Backspace"].includes(e.key)) { e.preventDefault(); ir(i - 1, true); }
+    else if (e.key === "Home") ir(0, true); else if (e.key === "End") ir(DIAPOS.length - 1);
+    else if (e.key.toLowerCase() === "a") alternarAuto();
+    else if (e.key === "Escape") { e.preventDefault(); salir(); } else return;
+    e.stopPropagation();
+  };
+  const alSalirPantalla = () => { if (!document.fullscreenElement && $("#pres")) salir(); };
+  let x0 = null;
+  capa.addEventListener("touchstart", (e) => { x0 = e.touches[0].clientX; }, { passive: true });
+  capa.addEventListener("touchend", (e) => { if (x0 === null) return; const dx = e.changedTouches[0].clientX - x0; if (Math.abs(dx) > 60) (dx < 0 ? ir(i + 1) : ir(i - 1, true)); x0 = null; });
+  bAuto.addEventListener("click", alternarAuto);
+  capa.replaceChildren(
+    el("div", { class: "pres-cab" }, el("div", { class: "pres-marca" }, el("img", { src: "/static/img/logo-udec.png", alt: "" }), el("div", {}, "Permanencia UdeC", el("small", {}, "Universidad de Cundinamarca · Seccional Fusagasugá"))), num),
+    cuerpo,
+    el("div", { class: "pres-pie" },
+      el("div", { class: "pres-ctrl" },
+        el("button", { class: "btn-icono", type: "button", "aria-label": "Anterior", title: "Anterior (←)", onclick: () => ir(i - 1, true) }, icono("izq")),
+        el("button", { class: "btn-icono", type: "button", "aria-label": "Siguiente", title: "Siguiente (→)", onclick: () => ir(i + 1) }, icono("der")), bAuto),
+      el("div", { class: "pres-progreso" }, barra),
+      el("span", { class: "pres-ayuda" }, "← → avanzar · A automático · Esc salir"),
+      el("button", { class: "btn-icono", type: "button", "aria-label": "Salir de la presentación", title: "Salir (Esc)", onclick: salir }, icono("x"))));
+  document.addEventListener("keydown", teclas, true);
+  document.addEventListener("fullscreenchange", alSalirPantalla);
+  ir(0);
 }

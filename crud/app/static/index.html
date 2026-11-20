@@ -8,13 +8,24 @@
   <title>Permanencia UdeC · Alerta temprana de la deserción</title>
   <link rel="preload" href="/static/fonts/montserrat-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="preload" href="/static/fonts/montserrat-latin-700-normal.woff2" as="font" type="font/woff2" crossorigin>
-  <script src="/static/tema.js?v=3"></script>
-  <link rel="stylesheet" href="/static/styles.css?v=3">
-  <script src="/static/chart.umd.min.js?v=3" defer></script>
-  <script src="/static/app.js?v=3" defer></script>
+  <script src="/static/tema.js?v=4"></script>
+  <link rel="stylesheet" href="/static/styles.css?v=4">
+  <script src="/static/chart.umd.min.js?v=4" defer></script>
+  <script src="/static/app.js?v=4" defer></script>
 </head>
 <body>
   <a class="saltar" href="#contenido">Saltar al contenido</a>
+
+  <!-- Pantalla de carga: se ve mientras el servidor responde y se cargan los datos -->
+  <div id="cargando" class="cargando" role="status" aria-live="polite">
+    <div class="cargando-caja">
+      <img src="/static/img/logo-udec.png" alt="" class="cargando-escudo">
+      <h1>Permanencia <span>UdeC</span></h1>
+      <p class="cargando-sub">Sistema de alerta temprana · Seccional Fusagasugá</p>
+      <div class="cargando-barra"><span></span></div>
+      <p id="cargando-msg">Preparando el sistema…</p>
+    </div>
+  </div>
 
   <!-- ================= Inicio de sesión ================= -->
   <main id="vista-login" class="login" hidden>
@@ -81,6 +92,7 @@
       </a>
       <div class="barra-der">
         <button class="buscador" id="btn-paleta" type="button" aria-label="Buscar (Ctrl + K)"><span data-icono="buscar"></span><span class="txt">Buscar estudiante o sección…</span><kbd>Ctrl K</kbd></button>
+        <button class="btn btn-acento btn-chico btn-presentar" id="btn-presentar" type="button" title="Modo presentación"><span data-icono="proyector"></span><span class="txt">Presentar</span></button>
         <button class="btn-icono" id="btn-tema" type="button" aria-label="Cambiar a modo oscuro" title="Modo claro / oscuro" data-icono="luna"></button>
         <button class="btn-icono" id="btn-recorrido" type="button" aria-label="Recorrido guiado" title="Recorrido guiado" data-icono="ruta"></button>
         <div class="usuario">

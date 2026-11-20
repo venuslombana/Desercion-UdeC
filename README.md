@@ -123,4 +123,4 @@ La interfaz usa la paleta del Manual de Imagen Institucional de la Universidad d
 
 El escudo de la universidad está en `crud/app/static/img/logo-udec.png` (fondo transparente). Si se quita el archivo, la aplicación muestra un texto de respaldo.
 
-Funciones de la interfaz: inicio guiado por rol, recorrido guiado, ayuda en cada pantalla, buscador universal (Ctrl + K), ficha 360 del estudiante, laboratorio de escenarios con máquina del tiempo y embudo de permanencia, modo oscuro y versión móvil con barra inferior.
+Funciones de la interfaz: inicio guiado por rol, recorrido guiado, ayuda en cada pantalla, buscador universal (Ctrl + K), ficha 360 del estudiante, laboratorio de escenarios con máquina del tiempo, mapa de calor de cohortes y embudo de permanencia, modo presentación (diapositivas con datos vivos: flechas para avanzar, A para avance automático, Esc para salir), pantalla de carga, modo oscuro y versión móvil con barra inferior.
